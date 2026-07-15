@@ -1,220 +1,193 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="./apple-touch-icon.png">
-<title>État des lieux</title>
-<style>
-:root{--bg:#eef2f7;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#cbd5e1;--accent:#0f172a;--soft:#e2e8f0;--danger:#b42318;--success:#166534}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
-button,input,select,textarea{font:inherit}
-button{border:0;border-radius:12px;padding:11px 14px;background:var(--accent);color:#fff;font-weight:750;cursor:pointer}
-button.secondary{background:var(--soft);color:var(--text)}
-button.danger{background:#fff1f2;color:var(--danger);border:1px solid #fecdd3}
-button:active{transform:scale(.98)}
-input,select,textarea{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;padding:11px;color:var(--text);font-size:16px}
-textarea{resize:vertical;min-height:84px}
-label{font-size:12px;font-weight:750;display:block}
-label>input,label>select,label>textarea{margin-top:6px}
-.hidden{display:none!important}
-header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-#backBtn{width:40px;height:40px;padding:0;border-radius:12px;background:var(--soft);color:var(--text);font-size:22px}
-.header-copy{min-width:0;flex:1}
-.header-copy h1{margin:0;font-size:19px;line-height:1.1}
-.header-copy p{margin:4px 0 0;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.progress{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800}
-.progress-track{width:50px;height:6px;background:var(--soft);border-radius:999px;overflow:hidden}
-#progressBar{height:100%;width:0;background:var(--accent);transition:width .25s ease}
-main{max-width:980px;margin:auto;padding:12px 12px 96px}
-.view{display:none}.view.active{display:block}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 3px 14px rgba(15,23,42,.04)}
-.card h2{margin:0 0 12px;font-size:16px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.toolbar{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:12px}
-.catalog{display:grid;gap:10px}
-.record{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px}
-.record h3{margin:7px 0 4px;font-size:15px}
-.meta{font-size:11px;color:var(--muted);line-height:1.5}
-.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
-.badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:10px;font-weight:800}
-.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.room{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px;background:#f8fafc}
-.room.validated{border-color:#86b99a;background:#f6fbf7}
-.room-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.room-head strong{font-size:14px}
-.room-actions{display:flex;gap:6px;flex-wrap:wrap}
-.room-actions button{padding:7px 9px;font-size:10px}
-.element{display:grid;grid-template-columns:1.1fr .8fr 1.5fr auto;gap:7px;margin-top:8px}
-.element button{padding:8px}
-.photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px}
-.photo img{width:100%;height:110px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
-.photo button{width:100%;margin-top:4px;font-size:10px;padding:7px}
-.signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-canvas{width:100%;height:165px;border:1px solid var(--line);border-radius:11px;background:#fff;touch-action:none}
-.bottom{position:fixed;left:0;right:0;bottom:0;z-index:35;display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.98);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
-#saveState{font-size:10px;color:var(--muted)}
-.modal{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(15,23,42,.68)}
-.modal.open{display:flex}
-.modal-card{position:relative;width:min(720px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;padding:18px}
-.close{position:absolute;right:12px;top:12px;width:36px;height:36px;padding:0;border-radius:999px;background:var(--soft);color:var(--text);font-size:22px}
-.step{display:none}.step.active{display:block}
-.choice-grid,.room-catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.choice,.room-template{background:#fff;color:var(--text);border:1px solid var(--line);text-align:left}
-.choice.active{background:var(--accent);color:#fff}
-.chips{display:flex;gap:7px;flex-wrap:wrap}
-.chip{background:#fff;color:var(--text);border:1px solid var(--line);font-size:11px}
-.chip.active{background:var(--accent);color:#fff}
-.notice{padding:10px 12px;border-radius:10px;background:#f1f5f9;color:var(--muted);font-size:12px;margin-bottom:10px}
-.voice-result .proposal{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:8px}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-@media(max-width:640px){
- .grid,.signature-grid{grid-template-columns:1fr}
- .toolbar{grid-template-columns:1fr}
- .element{grid-template-columns:1fr}
- .photo-grid{grid-template-columns:repeat(2,1fr)}
- .choice-grid,.room-catalog{grid-template-columns:1fr}
- .bottom{grid-template-columns:1fr 1fr}
- #saveState{grid-column:1/-1}
- .progress-track{width:38px}
-}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>État des lieux</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="./icons/favicon-32.png">
+  <link rel="stylesheet" href="./assets/styles.css">
+  <style>
+    html{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+    body{margin:0;background:#eef2f7;color:#0f172a}
+    button,input,select,textarea{font:inherit}
+  </style>
 </head>
 <body>
-<header>
-<button id="backBtn" class="hidden" type="button">←</button>
-<div class="header-copy"><h1>État des lieux</h1><p id="subtitle">Mes dossiers</p></div>
-<div id="progress" class="progress hidden"><span id="progressText">0 %</span><div class="progress-track"><div id="progressBar"></div></div></div>
-</header>
+  <header class="app-header">
+    <button id="backButton" class="icon-button is-hidden" type="button" aria-label="Retour aux dossiers">←</button>
+    <div class="app-header__copy">
+      <h1>État des lieux</h1>
+      <p id="headerSubtitle">Mes dossiers</p>
+    </div>
+    <div id="headerProgress" class="header-progress is-hidden" aria-label="Progression du dossier">
+      <span id="progressPercent">0 %</span>
+      <div class="header-progress__track"><div id="progressBar" class="header-progress__bar"></div></div>
+    </div>
+  </header>
 
-<main>
-<section id="catalogView" class="view active">
-  <div class="toolbar">
-    <input id="search" placeholder="Rechercher une adresse, un lot ou un locataire">
-    <button id="newBtn">+ Nouvel état des lieux</button>
+  <main class="app-main">
+    <section id="catalogView" class="app-view is-active">
+      <div class="catalog-toolbar">
+        <input id="catalogSearch" type="search" placeholder="Rechercher une adresse, un lot ou un locataire">
+        <button id="newRecordButton" type="button">+ Nouvel état des lieux</button>
+      </div>
+      <div id="catalogList" class="catalog-list"></div>
+    </section>
+
+    <section id="editorView" class="app-view">
+      <article class="panel">
+        <h2>Informations générales</h2>
+        <div class="form-grid">
+          <label>Type<select id="recordType"><option value="Entrée">Entrée</option><option value="Sortie">Sortie</option></select></label>
+          <label>Date et heure<input id="recordDate" type="datetime-local"></label>
+          <label class="form-grid__wide">Adresse<input id="propertyAddress" placeholder="Adresse complète"></label>
+          <label>Lot / référence<input id="propertyLot" placeholder="Lot 12, 3e étage"></label>
+          <label>Nature du bien<select id="propertyNature"><option>Appartement</option><option>Maison</option><option>Studio</option><option>Local</option></select></label>
+          <label>Logement meublé<select id="propertyFurnished"><option>Non</option><option>Oui</option></select></label>
+        </div>
+        <div id="referencePdfCard" class="reference-card is-hidden">
+          <div><strong>Ancien état des lieux associé</strong><span id="referencePdfName"></span></div>
+          <button id="previewReferencePdfButton" class="button button--secondary" type="button">Consulter</button>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Parties</h2>
+        <div class="form-grid">
+          <label>Bailleur ou mandataire<input id="landlordName"></label>
+          <label>Locataire<input id="tenantName"></label>
+          <label>Téléphone du locataire<input id="tenantPhone" inputmode="tel"></label>
+          <label>Email du locataire<input id="tenantEmail" type="email"></label>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Compteurs et accès</h2>
+        <div class="form-grid">
+          <label>Électricité HP<input id="electricityHp" inputmode="numeric"></label>
+          <label>Électricité HC<input id="electricityHc" inputmode="numeric"></label>
+          <label>Gaz<input id="gasIndex" inputmode="numeric"></label>
+          <label>Eau froide<input id="coldWaterIndex" inputmode="numeric"></label>
+          <label>Eau chaude<input id="hotWaterIndex" inputmode="numeric"></label>
+          <label>Clés porte<input id="doorKeys" type="number" min="0"></label>
+          <label>Badge / Vigik<input id="badges" type="number" min="0"></label>
+          <label>Bip parking<input id="parkingRemotes" type="number" min="0"></label>
+        </div>
+        <label class="check-row"><input id="metersNotApplicable" type="checkbox">Compteurs ou accès non accessibles / non concernés</label>
+      </article>
+
+      <article class="panel">
+        <div class="panel-heading">
+          <h2>Pièces</h2>
+          <button id="addRoomButton" class="button button--secondary" type="button">+ Ajouter une pièce</button>
+        </div>
+        <div id="roomsList" class="rooms-list"></div>
+      </article>
+
+      <article class="panel">
+        <h2>Observations et réserves</h2>
+        <label>Observations générales<textarea id="generalObservations" rows="4" placeholder="Observations générales"></textarea></label>
+        <label>Réserves<textarea id="generalReservations" rows="4" placeholder="Réserves éventuelles"></textarea></label>
+        <label class="check-row"><input id="noGeneralObservation" type="checkbox">Aucune observation générale particulière</label>
+      </article>
+
+      <article class="panel">
+        <h2>Signatures</h2>
+        <div class="signature-grid">
+          <section class="signature-card">
+            <label>Nom du signataire locataire<input id="tenantSignerName"></label>
+            <div class="signature-surface"><canvas id="tenantSignatureCanvas"></canvas></div>
+            <button class="button button--secondary clear-signature-button" type="button" data-signature="tenant">Effacer la signature</button>
+          </section>
+          <section class="signature-card">
+            <label>Nom du signataire bailleur / mandataire<input id="landlordSignerName"></label>
+            <div class="signature-surface"><canvas id="landlordSignatureCanvas"></canvas></div>
+            <button class="button button--secondary clear-signature-button" type="button" data-signature="landlord">Effacer la signature</button>
+          </section>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer id="editorActions" class="editor-actions is-hidden">
+    <span id="saveStatus">Enregistré</span>
+    <button id="saveButton" class="button button--secondary" type="button">Enregistrer</button>
+    <button id="generatePdfButton" class="button" type="button">Ouvrir le PDF</button>
+  </footer>
+
+  <div id="wizardModal" class="modal" aria-hidden="true">
+    <div class="modal__card wizard">
+      <button id="closeWizardButton" class="modal__close" type="button" aria-label="Fermer">×</button>
+      <h2>Créer un état des lieux</h2>
+      <p class="modal__intro">Quelques informations suffisent pour préparer le formulaire.</p>
+      <div class="wizard__progress"><span class="wizard__dot is-active"></span><span class="wizard__dot"></span><span class="wizard__dot"></span></div>
+
+      <section class="wizard__step is-active" data-wizard-step="1">
+        <h3>Type de document</h3>
+        <div class="choice-grid">
+          <button class="choice-card is-active" type="button" data-wizard-type="Entrée"><strong>État des lieux d’entrée</strong><span>Constat réalisé à l’arrivée du locataire.</span></button>
+          <button class="choice-card" type="button" data-wizard-type="Sortie"><strong>État des lieux de sortie</strong><span>Comparaison avec l’état des lieux d’entrée.</span></button>
+        </div>
+      </section>
+
+      <section class="wizard__step" data-wizard-step="2">
+        <h3>Le logement</h3>
+        <div class="form-grid">
+          <label class="form-grid__wide">Adresse<input id="wizardAddress" placeholder="Adresse complète"></label>
+          <label>Lot / référence<input id="wizardLot"></label>
+          <label>Nature<select id="wizardNature"><option>Appartement</option><option>Maison</option><option>Studio</option><option>Local</option></select></label>
+          <label>Meublé<select id="wizardFurnished"><option>Non</option><option>Oui</option></select></label>
+          <label>Nombre de pièces principales<select id="wizardMainRoomCount"><option value="1">Studio / 1 pièce</option><option value="2">2 pièces</option><option value="3">3 pièces</option><option value="4">4 pièces</option><option value="5">5 pièces et plus</option></select></label>
+        </div>
+      </section>
+
+      <section class="wizard__step" data-wizard-step="3">
+        <h3>Pièces présentes</h3>
+        <div id="wizardRoomChoices" class="chip-list"></div>
+        <label class="file-control">Ancien état des lieux d’entrée au format PDF (facultatif)<input id="wizardReferencePdf" type="file" accept="application/pdf"></label>
+      </section>
+
+      <div class="wizard__actions">
+        <button id="wizardPreviousButton" class="button button--secondary is-hidden" type="button">Retour</button>
+        <button id="wizardNextButton" class="button" type="button">Suivant</button>
+      </div>
+    </div>
   </div>
-  <div id="catalog" class="catalog"></div>
-</section>
 
-<section id="editorView" class="view">
-  <div class="card"><h2>Informations générales</h2><div class="grid">
-    <label>Type<select id="type"><option>Entrée</option><option>Sortie</option></select></label>
-    <label>Date et heure<input id="date" type="datetime-local"></label>
-    <label>Adresse<input id="address" placeholder="Adresse complète"></label>
-    <label>Lot / référence<input id="lot" placeholder="Lot 12, 3e étage"></label>
-    <label>Nature<select id="nature"><option>Appartement</option><option>Maison</option><option>Studio</option><option>Local</option></select></label>
-    <label>Meublé<select id="furnished"><option>Non</option><option>Oui</option></select></label>
-  </div></div>
-
-  <div class="card"><h2>Parties</h2><div class="grid">
-    <label>Bailleur / mandataire<input id="landlord"></label>
-    <label>Locataire<input id="tenant"></label>
-    <label>Téléphone<input id="phone"></label>
-    <label>Email<input id="email" type="email"></label>
-  </div></div>
-
-  <div class="card"><h2>Compteurs et accès</h2><div class="grid">
-    <label>Électricité HP<input id="hp"></label><label>Électricité HC<input id="hc"></label>
-    <label>Gaz<input id="gas"></label><label>Eau froide<input id="coldWater"></label>
-    <label>Eau chaude<input id="hotWater"></label><label>Clés porte<input id="keys" type="number" min="0"></label>
-    <label>Badge / Vigik<input id="badges" type="number" min="0"></label><label>Bip parking<input id="bips" type="number" min="0"></label>
-  </div></div>
-
-  <div class="card">
-    <div class="section-head"><h2>Pièces</h2><button id="addRoom" class="secondary">+ Ajouter</button></div>
-    <div id="rooms"></div>
+  <div id="roomCatalogModal" class="modal" aria-hidden="true">
+    <div class="modal__card">
+      <button id="closeRoomCatalogButton" class="modal__close" type="button" aria-label="Fermer">×</button>
+      <h2>Ajouter une pièce</h2>
+      <div id="roomCatalog" class="room-catalog"></div>
+    </div>
   </div>
 
-  <div class="card"><h2>Observations et réserves</h2>
-    <textarea id="observations" placeholder="Observations générales"></textarea>
-    <textarea id="reserves" placeholder="Réserves éventuelles"></textarea>
+  <div id="preflightModal" class="modal" aria-hidden="true">
+    <div class="modal__card modal__card--small">
+      <button id="closePreflightButton" class="modal__close" type="button" aria-label="Fermer">×</button>
+      <h2>Vérification avant PDF</h2>
+      <div id="preflightContent"></div>
+      <div class="modal-actions">
+        <button id="returnToFormButton" class="button button--secondary" type="button">Corriger</button>
+        <button id="forcePdfButton" class="button" type="button">Générer quand même</button>
+      </div>
+    </div>
   </div>
 
-  <div class="card"><h2>Signatures</h2><div class="signature-grid">
-    <div><label>Nom du locataire<input id="signTenantName"></label><canvas id="signTenant"></canvas><button class="secondary clear" data-canvas="signTenant">Effacer</button></div>
-    <div><label>Nom du bailleur / mandataire<input id="signLandlordName"></label><canvas id="signLandlord"></canvas><button class="secondary clear" data-canvas="signLandlord">Effacer</button></div>
-  </div></div>
-</section>
-</main>
+  <div id="referencePdfModal" class="modal" aria-hidden="true">
+    <div class="modal__card modal__card--pdf">
+      <button id="closeReferencePdfButton" class="modal__close" type="button" aria-label="Fermer">×</button>
+      <iframe id="referencePdfFrame" title="Ancien état des lieux"></iframe>
+    </div>
+  </div>
 
-<div id="bottom" class="bottom hidden"><span id="saveState">Enregistré</span><button id="saveBtn" class="secondary">Enregistrer</button><button id="pdfBtn">Ouvrir le PDF</button></div>
-
-<div id="wizard" class="modal">
-<div class="modal-card">
-<button id="closeWizard" class="close" type="button">×</button>
-<h2>Créer un état des lieux</h2>
-<div class="step active" data-step="1"><h3>Type de document</h3><div class="choice-grid"><button class="choice active" data-type="Entrée">Entrée</button><button class="choice" data-type="Sortie">Sortie</button></div></div>
-<div class="step" data-step="2"><h3>Le logement</h3><div class="grid"><label>Adresse<input id="wAddress"></label><label>Lot<input id="wLot"></label><label>Meublé<select id="wFurnished"><option>Non</option><option>Oui</option></select></label><label>Nombre de pièces principales<select id="wCount"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label></div></div>
-<div class="step" data-step="3"><h3>Pièces présentes</h3><div id="wizardRooms" class="chips"></div><label style="margin-top:12px">Ancien PDF d’entrée (facultatif)<input id="wPdf" type="file" accept="application/pdf"></label></div>
-<div class="row" style="justify-content:space-between;margin-top:16px"><button id="wizardBack" class="secondary hidden">Retour</button><button id="wizardNext">Suivant</button></div>
-</div></div>
-
-<div id="roomModal" class="modal"><div class="modal-card"><button id="closeRoom" class="close">×</button><h2>Ajouter une pièce</h2><div id="roomCatalog" class="room-catalog"></div></div></div>
-<div id="voiceModal" class="modal"><div class="modal-card"><button id="closeVoice" class="close">×</button><h2 id="voiceTitle">Dicter une pièce</h2><div id="voiceStatus" class="notice">Appuyez sur Commencer puis parlez.</div><div class="row"><button id="voiceStart">🎤 Commencer</button><button id="voiceStop" class="secondary">Arrêter</button></div><textarea id="voiceText" placeholder="Transcription"></textarea><button id="voiceAnalyze">Analyser</button><div id="voiceResult" class="voice-result"></div></div></div>
-
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
-<script>
-const TEMPLATES={
-"Entrée / dégagement":["Porte d’entrée","Serrure / poignée","Sonnette / interphone","Murs","Sol","Plafond","Éclairage / interrupteurs","Prises électriques"],
-"Séjour / pièce principale":["Porte","Murs","Sol","Plafond","Fenêtres / vitrages","Volets / stores","Radiateurs","Éclairage / interrupteurs","Prises électriques"],
-"Cuisine":["Porte","Murs","Sol","Plafond","Fenêtres / volets","Éclairage / interrupteurs","Prises électriques","Évier","Robinetterie","Plan de travail","Placards","Tiroirs","Plaques de cuisson","Four","Hotte","Réfrigérateur","Lave-vaisselle","VMC"],
-"Chambre":["Porte","Serrure / poignée","Murs","Sol","Plafond","Fenêtres / vitrages","Volets / stores","Radiateur","Éclairage / interrupteurs","Prises électriques","Placard"],
-"Salle de bains":["Porte","Murs","Sol","Plafond","Ventilation","Éclairage / interrupteurs","Prises électriques","Lavabo","Robinetterie","Baignoire","Pare-baignoire","WC","VMC"],
-"Salle d’eau":["Porte","Murs","Sol","Plafond","Ventilation","Éclairage / interrupteurs","Prises électriques","Lavabo","Robinetterie","Douche","Pare-douche","WC","VMC"],
-"WC":["Porte","Murs","Sol","Plafond","Éclairage","Lave-mains","Robinetterie","WC","Ventilation"],
-"Balcon / terrasse":["Sol","Murs / garde-corps","Éclairage","Prise électrique","Robinet extérieur","Évacuation d’eau"],
-"Bureau":["Porte","Murs","Sol","Plafond","Fenêtres / vitrages","Radiateur","Éclairage","Prises électriques"],
-"Dressing":["Porte","Murs","Sol","Plafond","Éclairage","Placards / étagères"],
-"Buanderie":["Porte","Murs","Sol","Plafond","Éclairage","Prises électriques","Arrivée d’eau","Évacuation d’eau","VMC"],
-"Cave":["Porte","Serrure","Murs","Sol","Plafond","Éclairage","Ventilation"],
-"Parking / garage":["Accès","Porte / portail","Télécommande","Sol","Murs","Plafond","Éclairage","Prise électrique"],
-"Autre":["Murs","Sol","Plafond","Éclairage","Prises électriques"]
-};
-const CONDITIONS=["Non vérifié","Neuf","Très bon état","Bon état","État d’usage","Passable","Mauvais état","À remplacer","Non concerné"];
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)], uid=()=>crypto.randomUUID?.()||Math.random().toString(36).slice(2);
-const localNow=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
-let current=null,wizardStep=1,wizardType="Entrée",voiceRoomId=null,recognition=null,voiceProposals=[],saveTimer;
-
-function emptyRecord(){return{id:uid(),type:"Entrée",date:localNow(),address:"",lot:"",nature:"Appartement",furnished:"Non",landlord:"",tenant:"",phone:"",email:"",meters:{hp:"",hc:"",gas:"",coldWater:"",hotWater:"",keys:"0",badges:"0",bips:"0"},rooms:[],observations:"",reserves:"",signTenantName:"",signLandlordName:"",signTenant:"",signLandlord:"",status:"Brouillon",createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),referencePdf:null}}
-function roomFrom(name){return{id:uid(),name,validated:false,photos:[],elements:TEMPLATES[name].map(n=>({id:uid(),name:n,condition:"Non vérifié",exitCondition:"Non vérifié",description:""}))}}
-function openDb(){return new Promise((res,rej)=>{const q=indexedDB.open("edl_standalone_v3",1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains("records"))q.result.createObjectStore("records",{keyPath:"id"})};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
-async function dbPut(r){const db=await openDb();return new Promise((res,rej)=>{const tx=db.transaction("records","readwrite");tx.objectStore("records").put(r);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
-async function dbGet(id){const db=await openDb();return new Promise((res,rej)=>{const q=db.transaction("records").objectStore("records").get(id);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
-async function dbAll(){const db=await openDb();return new Promise((res,rej)=>{const q=db.transaction("records").objectStore("records").getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)})}
-async function dbDelete(id){const db=await openDb();return new Promise((res,rej)=>{const tx=db.transaction("records","readwrite");tx.objectStore("records").delete(id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
-
-function showEditor(on){$("#catalogView").classList.toggle("active",!on);$("#editorView").classList.toggle("active",on);$("#backBtn").classList.toggle("hidden",!on);$("#bottom").classList.toggle("hidden",!on);$("#progress").classList.toggle("hidden",!on);$("#subtitle").textContent=on?`${current.type} · ${current.address||"Formulaire en cours"}`:"Mes dossiers"}
-async function renderCatalog(){const q=$("#search").value.toLowerCase(),rows=(await dbAll()).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)).filter(r=>`${r.address} ${r.lot} ${r.tenant} ${r.type}`.toLowerCase().includes(q));$("#catalog").innerHTML=rows.length?rows.map(r=>`<article class="record"><span class="badge">${r.status||"Brouillon"}</span><h3>${r.address||"Adresse non renseignée"}</h3><div class="meta">${r.lot||"Sans lot"} · ${r.type}<br>${r.tenant?`Locataire : ${r.tenant}<br>`:""}${new Date(r.updatedAt).toLocaleString("fr-FR")}</div><div class="actions"><button data-open="${r.id}">Ouvrir</button><button class="secondary" data-dup="${r.id}">Dupliquer</button><button class="danger" data-del="${r.id}">Supprimer</button></div></article>`).join(""):`<div class="card">Aucun dossier enregistré.</div>`;$$("[data-open]").forEach(b=>b.onclick=()=>openRecord(b.dataset.open));$$("[data-dup]").forEach(b=>b.onclick=()=>duplicateRecord(b.dataset.dup));$$("[data-del]").forEach(b=>b.onclick=()=>deleteRecord(b.dataset.del))}
-function hydrate(){const r=current;$("#type").value=r.type;$("#date").value=r.date;$("#address").value=r.address;$("#lot").value=r.lot;$("#nature").value=r.nature;$("#furnished").value=r.furnished;$("#landlord").value=r.landlord;$("#tenant").value=r.tenant;$("#phone").value=r.phone;$("#email").value=r.email;Object.entries(r.meters).forEach(([k,v])=>$("#"+k).value=v);$("#observations").value=r.observations;$("#reserves").value=r.reserves;$("#signTenantName").value=r.signTenantName;$("#signLandlordName").value=r.signLandlordName;drawSign("signTenant",r.signTenant);drawSign("signLandlord",r.signLandlord);renderRooms();updateProgress();showEditor(true)}
-function collect(){const r=current;Object.assign(r,{type:$("#type").value,date:$("#date").value,address:$("#address").value,lot:$("#lot").value,nature:$("#nature").value,furnished:$("#furnished").value,landlord:$("#landlord").value,tenant:$("#tenant").value,phone:$("#phone").value,email:$("#email").value,observations:$("#observations").value,reserves:$("#reserves").value,signTenantName:$("#signTenantName").value,signLandlordName:$("#signLandlordName").value,signTenant:$("#signTenant").toDataURL(),signLandlord:$("#signLandlord").toDataURL()});["hp","hc","gas","coldWater","hotWater","keys","badges","bips"].forEach(k=>r.meters[k]=$("#"+k).value);r.updatedAt=new Date().toISOString();r.status=progress()===100?"Terminé":(r.signTenantName||r.signLandlordName)?"À signer":"Brouillon"}
-async function save(){if(!current)return;collect();$("#saveState").textContent="Enregistrement…";await dbPut(current);$("#saveState").textContent="Enregistré";updateProgress()}
-function schedule(){clearTimeout(saveTimer);saveTimer=setTimeout(save,700)}
-function progress(){if(!current)return 0;const r=current,parts=[Boolean(r.address&&r.date&&r.nature),Boolean(r.landlord&&r.tenant),Object.values(r.meters).some(v=>String(v)&&String(v)!=="0"),r.rooms.length?r.rooms.filter(x=>x.validated).length/r.rooms.length:0,Boolean(r.observations||r.reserves),Boolean(r.signTenantName&&r.signLandlordName)],w=[15,10,15,45,5,10];return Math.round(parts.reduce((s,v,i)=>s+w[i]*(typeof v==="number"?v:(v?1:0)),0))}
-function updateProgress(){const p=progress();$("#progressText").textContent=p+" %";$("#progressBar").style.width=p+"%"}
-function uniqueName(base){const names=current.rooms.map(x=>x.name.toLowerCase());if(!names.includes(base.toLowerCase()))return base;let n=2;while(names.includes(`${base} ${n}`.toLowerCase()))n++;return `${base} ${n}`}
-function renderRooms(){const r=current;$("#rooms").innerHTML=r.rooms.map(room=>`<div class="room ${room.validated?"validated":""}"><div class="room-head"><strong>${room.name}</strong><div class="room-actions"><button class="secondary" data-conform="${room.id}">Tout est conforme</button><button class="secondary" data-voice="${room.id}">🎤 Dicter</button><button class="secondary" data-dup-room="${room.id}">Dupliquer</button><button class="danger" data-del-room="${room.id}">Supprimer</button></div></div>${room.elements.map(e=>`<div class="element"><input data-r="${room.id}" data-e="${e.id}" data-k="name" value="${e.name}"><select data-r="${room.id}" data-e="${e.id}" data-k="${r.type==="Sortie"?"exitCondition":"condition"}">${CONDITIONS.map(c=>`<option ${c===(r.type==="Sortie"?e.exitCondition:e.condition)?"selected":""}>${c}</option>`).join("")}</select><input data-r="${room.id}" data-e="${e.id}" data-k="description" value="${e.description||""}" placeholder="Description"><button class="secondary" data-del-e="${room.id}:${e.id}">×</button></div>`).join("")}<button class="secondary" data-add-e="${room.id}">+ Élément</button><input type="file" accept="image/*" capture="environment" multiple data-photo="${room.id}"><div class="photo-grid">${room.photos.map((p,i)=>`<div class="photo"><img src="${p.data}"><button class="danger" data-del-photo="${room.id}:${i}">Supprimer</button></div>`).join("")}</div><button data-validate="${room.id}">${room.validated?"✓ Pièce validée":"Valider la pièce"}</button></div>`).join("");$$("[data-r]").forEach(x=>x.oninput=()=>{const room=r.rooms.find(a=>a.id===x.dataset.r),e=room.elements.find(a=>a.id===x.dataset.e);e[x.dataset.k]=x.value;schedule()});$$("[data-conform]").forEach(b=>b.onclick=()=>{const room=r.rooms.find(x=>x.id===b.dataset.conform);room.elements.forEach(e=>{e.condition="Bon état";e.exitCondition="Bon état"});room.validated=true;renderRooms();schedule()});$$("[data-voice]").forEach(b=>b.onclick=()=>openVoice(b.dataset.voice));$$("[data-dup-room]").forEach(b=>b.onclick=()=>{const i=r.rooms.findIndex(x=>x.id===b.dataset.dupRoom),copy=structuredClone(r.rooms[i]);copy.id=uid();copy.name=uniqueName(copy.name);copy.validated=false;copy.photos=[];copy.elements=copy.elements.map(e=>({...e,id:uid()}));r.rooms.splice(i+1,0,copy);renderRooms();schedule()});$$("[data-del-room]").forEach(b=>b.onclick=()=>{r.rooms=r.rooms.filter(x=>x.id!==b.dataset.delRoom);renderRooms();schedule()});$$("[data-add-e]").forEach(b=>b.onclick=()=>{r.rooms.find(x=>x.id===b.dataset.addE).elements.push({id:uid(),name:"Nouvel élément",condition:"Non vérifié",exitCondition:"Non vérifié",description:""});renderRooms();schedule()});$$("[data-del-e]").forEach(b=>b.onclick=()=>{const [rid,eid]=b.dataset.delE.split(":");const room=r.rooms.find(x=>x.id===rid);room.elements=room.elements.filter(e=>e.id!==eid);renderRooms();schedule()});$$("[data-photo]").forEach(inp=>inp.onchange=async()=>{const room=r.rooms.find(x=>x.id===inp.dataset.photo);for(const file of inp.files)room.photos.push({data:await compress(file)});renderRooms();schedule()});$$("[data-del-photo]").forEach(b=>b.onclick=()=>{const [rid,i]=b.dataset.delPhoto.split(":");r.rooms.find(x=>x.id===rid).photos.splice(Number(i),1);renderRooms();schedule()});$$("[data-validate]").forEach(b=>b.onclick=()=>{const room=r.rooms.find(x=>x.id===b.dataset.validate);room.validated=!room.validated;renderRooms();schedule()});updateProgress()}
-async function compress(file){const u=URL.createObjectURL(file),img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=u});const s=Math.min(1,1400/img.width),c=document.createElement("canvas");c.width=img.width*s;c.height=img.height*s;c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);return c.toDataURL("image/jpeg",.75)}
-async function openRecord(id){current=await dbGet(id);hydrate()}
-async function duplicateRecord(id){const src=await dbGet(id),copy=structuredClone(src);copy.id=uid();copy.type="Sortie";copy.status="Brouillon";copy.createdAt=copy.updatedAt=new Date().toISOString();copy.rooms=copy.rooms.map(room=>({...room,id:uid(),validated:false,elements:room.elements.map(e=>({...e,id:uid(),exitCondition:"Non vérifié"}))}));await dbPut(copy);renderCatalog()}
-async function deleteRecord(id){if(confirm("Supprimer ce dossier ?")){await dbDelete(id);renderCatalog()}}
-function openWizard(){wizardStep=1;wizardType="Entrée";$$(".step").forEach((x,i)=>x.classList.toggle("active",i===0));$("#wizardBack").classList.add("hidden");$("#wizardNext").textContent="Suivant";renderWizardRooms();$("#wizard").classList.add("open")}
-function closeWizard(){$("#wizard").classList.remove("open")}
-function renderWizardRooms(){const defaults=["Entrée / dégagement","Séjour / pièce principale","Cuisine","Salle d’eau","WC"];$("#wizardRooms").innerHTML=Object.keys(TEMPLATES).map(n=>`<button class="chip ${defaults.includes(n)?"active":""}" data-wroom="${n}">${n}</button>`).join("");$$("[data-wroom]").forEach(b=>b.onclick=()=>b.classList.toggle("active"))}
-async function finishWizard(){const r=emptyRecord();r.type=wizardType;r.address=$("#wAddress").value;r.lot=$("#wLot").value;r.furnished=$("#wFurnished").value;let selected=$$("[data-wroom].active").map(x=>x.dataset.wroom),count=Number($("#wCount").value||1);selected=selected.filter(x=>x!=="Chambre");for(let i=1;i<count;i++)selected.push(i===1?"Chambre":`Chambre ${i}`);r.rooms=[...new Set(selected)].map(n=>{const base=n.replace(/ \d+$/,"");const room=roomFrom(TEMPLATES[base]?base:"Chambre");room.name=n;return room});const file=$("#wPdf").files[0];if(file)r.referencePdf={name:file.name,size:file.size};current=r;await dbPut(r);closeWizard();hydrate()}
-function setupCanvas(id){const c=$("#"+id),ctx=c.getContext("2d");function resize(){const d=devicePixelRatio||1,rect=c.getBoundingClientRect();c.width=rect.width*d;c.height=165*d;ctx.setTransform(d,0,0,d,0,0)}resize();let down=false;const pos=e=>{const r=c.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}};const start=e=>{down=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault()};const move=e=>{if(!down)return;const p=pos(e);ctx.lineWidth=2;ctx.lineCap="round";ctx.lineTo(p.x,p.y);ctx.stroke();e.preventDefault()};c.addEventListener("mousedown",start);c.addEventListener("mousemove",move);window.addEventListener("mouseup",()=>down=false);c.addEventListener("touchstart",start,{passive:false});c.addEventListener("touchmove",move,{passive:false});c.addEventListener("touchend",()=>down=false)}
-function drawSign(id,data){const c=$("#"+id),ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);if(data){const img=new Image();img.onload=()=>ctx.drawImage(img,0,0,c.clientWidth,165);img.src=data}}
-function openVoice(id){voiceRoomId=id;voiceProposals=[];$("#voiceTitle").textContent="Dicter : "+current.rooms.find(x=>x.id===id).name;$("#voiceText").value="";$("#voiceResult").innerHTML="";$("#voiceModal").classList.add("open")}
-function closeVoice(){try{recognition?.stop()}catch{}$("#voiceModal").classList.remove("open")}
-function normalize(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
-function detect(s){const n=normalize(s);if(/\b(neuf|comme neuf)\b/.test(n))return"Neuf";if(/\b(tres bon)\b/.test(n))return"Très bon état";if(/\b(bon etat|correct|fonctionnel)\b/.test(n))return"Bon état";if(/\b(usage|use|traces|rayures)\b/.test(n))return"État d’usage";if(/\b(mauvais|degrade|casse|fissure|trou|tache|moisi|desserr|abime)\b/.test(n))return"Mauvais état";if(/\b(a remplacer|hors service)\b/.test(n))return"À remplacer";return"État d’usage"}
-function analyzeVoice(){const room=current.rooms.find(x=>x.id===voiceRoomId),sentences=$("#voiceText").value.split(/[.!?;\n]+/).map(x=>x.trim()).filter(Boolean);voiceProposals=[];for(const sentence of sentences){const n=normalize(sentence);let best=null;for(const e of room.elements){const words=normalize(e.name).split(/\s+|\/|-/).filter(w=>w.length>3),score=words.filter(w=>n.includes(w)).length;if(score>0&&(!best||score>best.score))best={e,score}}if(best)voiceProposals.push({elementId:best.e.id,name:best.e.name,condition:detect(sentence),description:sentence})}$("#voiceResult").innerHTML=voiceProposals.length?voiceProposals.map((p,i)=>`<div class="proposal"><strong>${p.name}</strong><select data-vc="${i}">${CONDITIONS.map(c=>`<option ${c===p.condition?"selected":""}>${c}</option>`).join("")}</select><input data-vd="${i}" value="${p.description}"></div>`).join("")+`<button id="applyVoice">Valider</button>`:`<div class="notice">Aucun élément identifié. Corrigez la transcription ou copiez-la dans les observations.</div>`;$$("[data-vc]").forEach(x=>x.onchange=()=>voiceProposals[x.dataset.vc].condition=x.value);$$("[data-vd]").forEach(x=>x.oninput=()=>voiceProposals[x.dataset.vd].description=x.value);$("#applyVoice")?.addEventListener("click",()=>{for(const p of voiceProposals){const e=room.elements.find(x=>x.id===p.elementId);if(current.type==="Sortie")e.exitCondition=p.condition;else e.condition=p.condition;e.description=p.description}renderRooms();schedule();closeVoice()})}
-async function makePdf(){collect();if(!window.jspdf){alert("Bibliothèque PDF indisponible.");return}const{jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4",compress:true}),M=14,W=210,H=297,TOP=28,BOTTOM=278,C={dark:[47,52,55],light:[242,243,244],line:[205,209,212],green:[221,238,221],yellow:[255,241,191],red:[246,209,209],white:[255,255,255]};let y=TOP;const color=v=>{const s=String(v||"").toLowerCase();if(s.includes("bon")||s.includes("neuf"))return C.green;if(s.includes("usage")||s.includes("passable"))return C.yellow;if(s.includes("mauvais")||s.includes("remplacer"))return C.red;return C.light};function header(){doc.setTextColor(...C.dark);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text(`ÉTAT DES LIEUX D’${current.type==="Sortie"?"SORTIE":"ENTRÉE"}`,M,11);doc.setFont("helvetica","normal");doc.setFontSize(7);doc.text(`Référence : ${current.lot||current.id}`,W-M,8,{align:"right"});doc.text(new Date(current.date).toLocaleString("fr-FR"),W-M,13,{align:"right"});doc.line(M,20,W-M,20)}function footer(n,t){doc.line(M,282,W-M,282);doc.setFontSize(6.5);doc.setTextColor(100);doc.text("État des lieux · Document établi contradictoirement entre les parties",M,287);doc.text(`Page ${n} / ${t}`,W-M,287,{align:"right"})}function page(){doc.addPage();header();y=TOP}function ensure(h){if(y+h>BOTTOM)page()}function title(t){ensure(10);doc.setFillColor(...C.dark);doc.roundedRect(M,y,W-2*M,8,1.5,1.5,"F");doc.setTextColor(...C.white);doc.setFontSize(9);doc.setFont("helvetica","bold");doc.text(t,M+4,y+5.4);y+=11}header();title("INFORMATIONS GÉNÉRALES");doc.autoTable({startY:y,margin:{left:M,right:M},theme:"grid",head:[["Champ","Valeur"]],body:[["Adresse",current.address||"—"],["Nature",current.nature],["Meublé",current.furnished],["Bailleur",current.landlord||"—"],["Locataire",current.tenant||"—"]],styles:{fontSize:8,cellPadding:3,lineColor:C.line},headStyles:{fillColor:C.dark,textColor:C.white}});y=doc.lastAutoTable.finalY+7;title("COMPTEURS ET ACCÈS");doc.autoTable({startY:y,margin:{left:M,right:M},theme:"grid",head:[["Élément","Valeur"]],body:Object.entries(current.meters).map(([k,v])=>[k,v||"—"]),styles:{fontSize:8,cellPadding:3,lineColor:C.line},headStyles:{fillColor:C.dark,textColor:C.white}});y=doc.lastAutoTable.finalY+7;for(const[i,room]of current.rooms.entries()){title(`${i+1}. ${room.name}`);doc.autoTable({startY:y,margin:{left:M,right:M,top:TOP},theme:"grid",head:[["Élément","Description","État"]],body:room.elements.map(e=>[e.name,e.description||"—",current.type==="Sortie"?e.exitCondition:e.condition]),styles:{fontSize:7.3,cellPadding:2.5,lineColor:C.line},headStyles:{fillColor:C.light,textColor:C.dark},didParseCell(d){if(d.section==="body"&&d.column.index===2)d.cell.styles.fillColor=color(d.cell.raw)}});y=doc.lastAutoTable.finalY+5;for(const p of room.photos.slice(0,4)){ensure(48);try{doc.addImage(p.data,"JPEG",M,y,80,42,undefined,"FAST")}catch{}y+=47}}title("OBSERVATIONS ET RÉSERVES");const lines=doc.splitTextToSize(`${current.observations||"Aucune observation."}\n\n${current.reserves||""}`,W-2*M-10);ensure(lines.length*4+14);doc.setFillColor(...C.light);doc.roundedRect(M,y,W-2*M,lines.length*4+10,2,2,"F");doc.setTextColor(...C.dark);doc.setFontSize(8);doc.text(lines,M+5,y+6);y+=lines.length*4+15;if(y+58>BOTTOM)page();title("SIGNATURES");doc.rect(M,y,85,45);doc.rect(111,y,85,45);doc.setFontSize(8);doc.text(`Locataire : ${current.signTenantName||current.tenant||"—"}`,M+4,y+6);doc.text(`Bailleur : ${current.signLandlordName||current.landlord||"—"}`,115,y+6);try{doc.addImage(current.signTenant,"PNG",M+6,y+10,73,28);doc.addImage(current.signLandlord,"PNG",117,y+10,73,28)}catch{}const total=doc.getNumberOfPages();for(let n=1;n<=total;n++){doc.setPage(n);header();footer(n,total)}const blob=doc.output("blob"),url=URL.createObjectURL(blob);window.open(url,"_blank");setTimeout(()=>URL.revokeObjectURL(url),60000)}
-function bind(){$("#newBtn").onclick=openWizard;$("#backBtn").onclick=()=>{showEditor(false);renderCatalog()};$("#search").oninput=renderCatalog;$("#saveBtn").onclick=save;$("#pdfBtn").onclick=makePdf;$("#addRoom").onclick=()=>{$("#roomCatalog").innerHTML=Object.entries(TEMPLATES).map(([n,e])=>`<button class="room-template" data-template="${n}"><strong>${n}</strong><br><small>${e.slice(0,4).join(" · ")}…</small></button>`).join("");$$("[data-template]").forEach(b=>b.onclick=()=>{current.rooms.push(roomFrom(b.dataset.template));$("#roomModal").classList.remove("open");renderRooms();schedule()});$("#roomModal").classList.add("open")};$("#closeRoom").onclick=()=>$("#roomModal").classList.remove("open");$("#closeWizard").onclick=closeWizard;$("#wizard").onclick=e=>{if(e.target===$("#wizard"))closeWizard()};$("#closeVoice").onclick=closeVoice;$("#voiceStart").onclick=()=>{const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){$("#voiceStatus").textContent="Utilisez le micro du clavier iPhone dans la zone de transcription.";return}recognition=new R();recognition.lang="fr-FR";recognition.continuous=true;recognition.interimResults=true;let final="";recognition.onresult=e=>{let interim="";for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)final+=" "+t;else interim+=t}$("#voiceText").value=(final+" "+interim).trim()};recognition.start()};$("#voiceStop").onclick=()=>{try{recognition?.stop()}catch{}};$("#voiceAnalyze").onclick=analyzeVoice;$$(".choice").forEach(b=>b.onclick=()=>{$$(".choice").forEach(x=>x.classList.remove("active"));b.classList.add("active");wizardType=b.dataset.type});$("#wizardNext").onclick=async()=>{if(wizardStep<3){wizardStep++;$$(".step").forEach(x=>x.classList.toggle("active",Number(x.dataset.step)===wizardStep));$("#wizardBack").classList.toggle("hidden",wizardStep===1);$("#wizardNext").textContent=wizardStep===3?"Créer":"Suivant"}else await finishWizard()};$("#wizardBack").onclick=()=>{wizardStep--;$$(".step").forEach(x=>x.classList.toggle("active",Number(x.dataset.step)===wizardStep));$("#wizardBack").classList.toggle("hidden",wizardStep===1);$("#wizardNext").textContent="Suivant"};$("#editorView").addEventListener("input",schedule);$("#editorView").addEventListener("change",schedule);$$(".clear").forEach(b=>b.onclick=()=>{const c=$("#"+b.dataset.canvas);c.getContext("2d").clearRect(0,0,c.width,c.height);schedule()});setupCanvas("signTenant");setupCanvas("signLandlord")}
-bind();$("#date").value=localNow();renderCatalog();showEditor(false);if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
-</script>
-</body></html>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

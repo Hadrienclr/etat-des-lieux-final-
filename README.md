@@ -1,19 +1,36 @@
-# État des lieux V3 Standalone
+# État des lieux V4 Stable
 
-Version autonome : tout le CSS et le JavaScript sont intégrés dans `index.html`.
+Version reconstruite proprement, sans dictée vocale.
 
-## Déploiement GitHub / Vercel
-1. Supprimez les anciens fichiers du dépôt, sans supprimer le dépôt.
-2. Décompressez cette archive.
-3. Déposez tous les fichiers directement à la racine.
-4. Faites un commit.
-5. Vercel redéploie automatiquement.
+## Fonctions
 
-## Fichiers
-- index.html
-- manifest.webmanifest
-- service-worker.js
-- vercel.json
-- icônes PNG
+- Catalogue par adresse et lot
+- Assistant de création
+- Entrée ou sortie
+- Import d’un ancien PDF comme référence
+- Modèles de pièces avec éléments adaptés
+- État initial « Non vérifié »
+- Bouton « Tout est conforme »
+- Ajout, duplication et suppression de pièces
+- Ajout et suppression d’éléments
+- Photos par pièce avec compression
+- Signatures tactiles iPhone, souris et stylet
+- Sauvegarde automatique IndexedDB
+- Progression et statuts
+- Contrôle avant PDF
+- PDF neutre avec tableaux, photos, signatures et pagination
+- PWA avec icône iPhone
 
-Cette structure évite les erreurs 404 sur les dossiers CSS/JS.
+## Déploiement
+
+Déposez le contenu de l’archive directement à la racine du dépôt GitHub. Les dossiers `assets`, `js` et `icons` doivent rester des dossiers.
+
+Vercel :
+- Framework Preset : Other
+- Build Command : vide
+- Output Directory : vide
+- Root Directory : vide
+
+## Important
+
+Les dossiers sont stockés localement sur l’appareil. Ils peuvent être perdus si les données du navigateur sont supprimées.

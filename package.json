@@ -1,0 +1,9 @@
+{
+  "name": "etat-des-lieux-v4-stable",
+  "version": "4.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check js/app.js && node --check js/db.js && node --check js/pdf.js && node --check js/signature.js && node --check js/templates.js"
+  }
+}
