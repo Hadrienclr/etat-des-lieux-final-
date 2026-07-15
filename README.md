@@ -1,36 +1,17 @@
-# État des lieux V4 Stable
+# État des lieux — version mobile corrigée
 
-Version reconstruite proprement, sans dictée vocale.
+Version autonome : le CSS et le JavaScript sont intégrés dans `index.html`.
 
-## Fonctions
+## Corrections
 
-- Catalogue par adresse et lot
-- Assistant de création
-- Entrée ou sortie
-- Import d’un ancien PDF comme référence
-- Modèles de pièces avec éléments adaptés
-- État initial « Non vérifié »
-- Bouton « Tout est conforme »
-- Ajout, duplication et suppression de pièces
-- Ajout et suppression d’éléments
-- Photos par pièce avec compression
-- Signatures tactiles iPhone, souris et stylet
-- Sauvegarde automatique IndexedDB
-- Progression et statuts
-- Contrôle avant PDF
-- PDF neutre avec tableaux, photos, signatures et pagination
-- PWA avec icône iPhone
+- formulaire en une colonne sur iPhone ;
+- labels toujours placés au-dessus des champs ;
+- aucun débordement horizontal ;
+- signatures tactiles ;
+- dictée vocale supprimée ;
+- chemins des icônes corrigés ;
+- nouveau cache du service worker.
 
 ## Déploiement
 
-Déposez le contenu de l’archive directement à la racine du dépôt GitHub. Les dossiers `assets`, `js` et `icons` doivent rester des dossiers.
-
-Vercel :
-- Framework Preset : Other
-- Build Command : vide
-- Output Directory : vide
-- Root Directory : vide
-
-## Important
-
-Les dossiers sont stockés localement sur l’appareil. Ils peuvent être perdus si les données du navigateur sont supprimées.
+Déposez tous les fichiers directement à la racine du dépôt GitHub. Après le déploiement Vercel, supprimez l’ancien raccourci iPhone puis ajoutez-le à nouveau.

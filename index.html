@@ -8,14 +8,123 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>État des lieux</title>
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="icon" type="image/png" href="./icons/favicon-32.png">
-  <link rel="stylesheet" href="./assets/styles.css">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="./favicon-32.png">
   <style>
-    html{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-    body{margin:0;background:#eef2f7;color:#0f172a}
-    button,input,select,textarea{font:inherit}
-  </style>
+:root{--background:#eef2f7;--surface:#fff;--surface-soft:#f8fafc;--text:#0f172a;--muted:#64748b;--line:#cbd5e1;--line-soft:#e2e8f0;--accent:#0f172a;--accent-soft:#e2e8f0;--danger:#b42318;--danger-soft:#fff1f2;--success:#166534;--success-soft:#ecfdf5;--warning:#9a3412;--warning-soft:#fff7ed;--radius:16px;--shadow:0 5px 20px rgba(15,23,42,.06)}
+*{box-sizing:border-box;min-width:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:var(--background);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+button,input,select,textarea{font:inherit}
+button{-webkit-tap-highlight-color:transparent}
+input,select,textarea{width:100%;max-width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--text);padding:11px 12px;font-size:16px;line-height:1.25;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#64748b;box-shadow:0 0 0 3px rgba(100,116,139,.13)}
+textarea{resize:vertical;min-height:92px}
+label{display:block;color:var(--text);font-size:12px;font-weight:760;line-height:1.35}
+label>input,label>select,label>textarea{margin-top:6px}
+.button,button{border:0;border-radius:11px;background:var(--accent);color:#fff;padding:10px 13px;font-weight:760;line-height:1.15;cursor:pointer;transition:transform .15s ease,opacity .15s ease,box-shadow .15s ease}
+button:active{transform:scale(.975)}
+.button--secondary{background:var(--accent-soft);color:var(--text)}
+.button--danger{background:var(--danger-soft);color:var(--danger);border:1px solid #fecdd3}
+.icon-button{flex:0 0 auto;width:40px;height:40px;padding:0;border-radius:12px;background:var(--accent-soft);color:var(--text);font-size:22px}
+.is-hidden{display:none!important}
+.app-header{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:10px;min-height:60px;padding:9px max(12px,env(safe-area-inset-right)) 9px max(12px,env(safe-area-inset-left));background:rgba(255,255,255,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.app-header__copy{flex:1}
+.app-header__copy h1{margin:0;font-size:19px;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-header__copy p{margin:4px 0 0;color:var(--muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-progress{display:flex;align-items:center;gap:6px;flex:0 0 auto;color:var(--muted);font-size:10px;font-weight:800}
+.header-progress__track{width:52px;height:6px;overflow:hidden;background:var(--line-soft);border-radius:999px}
+.header-progress__bar{width:0;height:100%;background:var(--accent);border-radius:999px;transition:width .25s ease}
+.app-main{width:min(100%,1020px);margin:0 auto;padding:12px max(12px,env(safe-area-inset-right)) 96px max(12px,env(safe-area-inset-left))}
+.app-view{display:none}.app-view.is-active{display:block}
+.catalog-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-bottom:12px}
+.catalog-list{display:grid;gap:10px}
+.catalog-card{padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.catalog-card h3{margin:7px 0 4px;font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+.catalog-card__meta{color:var(--muted);font-size:11px;line-height:1.55}
+.catalog-card__actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.status-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:10px;font-weight:800}
+.status-badge--sign{background:var(--warning-soft);color:var(--warning)}
+.status-badge--done{background:var(--success-soft);color:var(--success)}
+.empty-state{padding:34px 18px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:var(--radius)}
+.panel{margin-bottom:12px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.panel h2{margin:0 0 13px;font-size:16px;line-height:1.25}
+.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.panel-heading h2{margin:0}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.form-grid__wide{grid-column:1/-1}
+.check-row{display:flex;align-items:flex-start;gap:9px;margin-top:12px;font-weight:650}.check-row input{width:18px;height:18px;margin:0;flex:0 0 auto}
+.reference-card{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:11px;background:var(--surface-soft);border:1px solid var(--line);border-radius:12px}
+.reference-card div{display:grid;gap:3px}.reference-card span{color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.rooms-list{display:grid;gap:11px;margin-top:12px}
+.room-card{padding:12px;background:var(--surface-soft);border:1px solid var(--line);border-radius:14px}.room-card.is-validated{background:#f6fbf7;border-color:#86b99a}
+.room-card__header{display:flex;align-items:flex-start;justify-content:space-between;gap:9px;margin-bottom:10px}.room-card__title{flex:1}.room-card__title input{font-weight:800}
+.room-card__actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;flex:0 1 auto}.room-card__actions button{padding:7px 9px;font-size:10px}
+.room-observation{margin-bottom:10px}.elements-list{display:grid;gap:8px}
+.element-card{display:grid;grid-template-columns:minmax(150px,1.05fr) minmax(145px,.85fr) minmax(180px,1.3fr) auto;gap:8px;align-items:end;padding:10px;background:#fff;border:1px solid var(--line-soft);border-radius:12px}
+.element-card label{min-width:0}.element-card--exit{grid-template-columns:minmax(135px,.9fr) minmax(135px,.75fr) minmax(135px,.75fr) minmax(180px,1.2fr) auto}.element-card__remove{width:38px;height:38px;padding:0;background:var(--danger-soft);color:var(--danger);border:1px solid #fecdd3}
+.room-card__footer{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.room-card__footer>*{flex:0 1 auto}
+.photo-control{position:relative;overflow:hidden}.photo-control input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.photo-card img{width:100%;height:120px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}.photo-card button{width:100%;margin-top:5px;padding:7px;font-size:10px}
+.validate-room-button{width:100%;margin-top:11px}
+.signature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.signature-card{min-width:0}
+.signature-surface{width:100%;height:180px;margin:9px 0;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:12px}.signature-surface canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}.clear-signature-button{width:100%}
+.editor-actions{position:fixed;left:0;right:0;bottom:0;z-index:45;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:8px max(12px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:rgba(255,255,255,.98);backdrop-filter:blur(14px);border-top:1px solid var(--line)}#saveStatus{color:var(--muted);font-size:10px}
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(15,23,42,.7)}.modal.is-open{display:flex}
+.modal__card{position:relative;width:min(760px,100%);max-height:92vh;overflow:auto;padding:18px;background:#fff;border-radius:18px;box-shadow:0 22px 60px rgba(15,23,42,.25)}
+.modal__card--small{width:min(460px,100%)}.modal__card--pdf{width:min(1000px,100%);height:min(90vh,850px);padding:0;overflow:hidden}.modal__card--pdf iframe{width:100%;height:100%;border:0}
+.modal__close{position:absolute;top:12px;right:12px;z-index:3;width:36px;height:36px;padding:0;border-radius:999px;background:var(--accent-soft);color:var(--text);font-size:22px}
+.modal h2{margin:0 44px 6px 0;font-size:20px}.modal__intro{margin:0 44px 16px 0;color:var(--muted);font-size:12px}
+.choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.choice-card{min-height:96px;padding:14px;text-align:left;color:var(--text);background:#fff;border:1px solid var(--line)}.choice-card.is-active{color:#fff;background:var(--accent)}.choice-card strong,.choice-card span{display:block}.choice-card span{margin-top:5px;font-size:11px;line-height:1.4;opacity:.8}
+.wizard__progress{display:flex;gap:6px;margin:14px 0 18px}.wizard__dot{height:6px;flex:1;background:var(--line-soft);border-radius:999px}.wizard__dot.is-active{background:var(--accent)}
+.wizard__step{display:none}.wizard__step.is-active{display:block}.wizard__step h3{margin:0 0 12px;font-size:16px}.wizard__actions,.modal-actions{display:flex;justify-content:space-between;gap:8px;margin-top:17px}
+.chip-list{display:flex;flex-wrap:wrap;gap:7px}.room-chip{padding:8px 10px;color:var(--text);background:#fff;border:1px solid var(--line);font-size:11px}.room-chip.is-active{color:#fff;background:var(--accent)}
+.file-control{display:block;margin-top:14px;padding:11px;background:var(--surface-soft);border:1px dashed var(--line);border-radius:12px}.file-control input{margin-top:8px}
+.room-catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.room-template{min-height:95px;padding:12px;text-align:left;color:var(--text);background:#fff;border:1px solid var(--line)}.room-template strong,.room-template span{display:block}.room-template span{margin-top:5px;color:var(--muted);font-size:10px;line-height:1.4}
+.preflight-list{margin:10px 0 0;padding-left:20px}.preflight-list li{margin:7px 0;font-size:13px}.preflight-ok{padding:12px;color:var(--success);background:var(--success-soft);border:1px solid #bbf7d0;border-radius:12px}
+@media(max-width:760px){.element-card,.element-card--exit{grid-template-columns:1fr 1fr}.element-card__description{grid-column:1/-1}.element-card__remove{grid-column:1/-1;width:100%}}
+@media(max-width:620px){.element-card--exit{grid-template-columns:1fr}.form-grid,.signature-grid,.choice-grid,.room-catalog{grid-template-columns:1fr}.catalog-toolbar{grid-template-columns:1fr}.room-card__header{display:block}.room-card__actions{justify-content:stretch;margin-top:8px}.room-card__actions button{flex:1 1 auto}.element-card{grid-template-columns:1fr}.element-card__description,.element-card__remove{grid-column:auto}.element-card__remove{width:100%}.photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.editor-actions{grid-template-columns:1fr 1fr}#saveStatus{grid-column:1/-1}.header-progress__track{width:38px}}
+@media(max-width:390px){.app-header__copy h1{font-size:17px}.header-progress__track{display:none}.photo-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* V5 : mobile-first, aucun chevauchement possible sur iPhone */
+.form-grid,.signature-grid,.choice-grid,.room-catalog{grid-template-columns:minmax(0,1fr)!important}
+.form-grid__wide{grid-column:auto!important}
+.catalog-toolbar{grid-template-columns:minmax(0,1fr)!important}
+.panel,.catalog-card,.room-card,.modal__card{overflow:hidden}
+.panel label,.room-card label,.signature-card label{width:100%;max-width:100%;display:flex;flex-direction:column}
+.panel input,.panel select,.panel textarea,.room-card input,.room-card select,.room-card textarea{display:block;width:100%!important;max-width:100%!important;min-width:0!important}
+.room-card__header{display:block}
+.room-card__actions{width:100%;justify-content:stretch;margin-top:9px}
+.room-card__actions button{flex:1 1 120px}
+.element-card,.element-card--exit{display:grid;grid-template-columns:minmax(0,1fr)!important;gap:9px}
+.element-card__description,.element-card__remove{grid-column:auto!important}
+.element-card__remove{width:100%;height:40px}
+.signature-surface{height:190px}
+.photo-grid{grid-template-columns:minmax(0,1fr)}
+.editor-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+#saveStatus{grid-column:1/-1}
+.header-progress__track{display:none}
+.reference-card{align-items:flex-start;flex-direction:column}
+.reference-card button{width:100%}
+@media(min-width:700px){
+  .form-grid,.signature-grid,.choice-grid,.room-catalog{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .form-grid__wide{grid-column:1/-1!important}
+  .catalog-toolbar{grid-template-columns:minmax(0,1fr) auto!important}
+  .room-card__header{display:flex}
+  .room-card__actions{width:auto;margin-top:0}
+  .element-card{grid-template-columns:minmax(150px,1.05fr) minmax(145px,.85fr) minmax(180px,1.3fr) auto!important}
+  .element-card--exit{grid-template-columns:minmax(130px,.9fr) minmax(130px,.75fr) minmax(130px,.75fr) minmax(170px,1.2fr) auto!important}
+  .element-card__description{grid-column:auto!important}
+  .element-card__remove{width:38px;height:38px}
+  .photo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .editor-actions{grid-template-columns:minmax(0,1fr) auto auto}
+  #saveStatus{grid-column:auto}
+  .header-progress__track{display:block}
+  .reference-card{align-items:center;flex-direction:row}
+  .reference-card button{width:auto}
+}
+
+</style>
 </head>
 <body>
   <header class="app-header">
@@ -188,6 +297,1514 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
-  <script type="module" src="./js/app.js"></script>
+  <script>
+
+/* templates.js */
+const CONDITIONS = [
+  "Non vérifié",
+  "Neuf",
+  "Très bon état",
+  "Bon état",
+  "État d’usage",
+  "Passable",
+  "Mauvais état",
+  "À remplacer",
+  "Non concerné"
+];
+
+const ROOM_TEMPLATES = {
+  "Entrée / dégagement": ["Porte d’entrée","Serrure / poignée","Sonnette / interphone","Murs","Sol","Plafond","Éclairage / interrupteurs","Prises électriques"],
+  "Séjour / pièce principale": ["Porte","Murs","Sol","Plafond","Fenêtres / vitrages","Volets / stores","Radiateurs","Éclairage / interrupteurs","Prises électriques"],
+  "Cuisine": ["Porte","Murs","Sol","Plafond","Fenêtres / volets","Éclairage / interrupteurs","Prises électriques","Évier","Robinetterie","Plan de travail","Placards","Tiroirs","Plaques de cuisson","Four","Hotte","Réfrigérateur","Lave-vaisselle","VMC"],
+  "Chambre": ["Porte","Serrure / poignée","Murs","Sol","Plafond","Fenêtres / vitrages","Volets / stores","Radiateur","Éclairage / interrupteurs","Prises électriques","Placard"],
+  "Salle de bains": ["Porte","Murs","Sol","Plafond","Ventilation","Éclairage / interrupteurs","Prises électriques","Lavabo","Robinetterie","Baignoire","Pare-baignoire","WC","VMC"],
+  "Salle d’eau": ["Porte","Murs","Sol","Plafond","Ventilation","Éclairage / interrupteurs","Prises électriques","Lavabo","Robinetterie","Douche","Pare-douche","WC","VMC"],
+  "WC": ["Porte","Murs","Sol","Plafond","Éclairage","Lave-mains","Robinetterie","WC","Ventilation"],
+  "Balcon / terrasse": ["Sol","Murs / garde-corps","Éclairage","Prise électrique","Robinet extérieur","Évacuation d’eau"],
+  "Bureau": ["Porte","Murs","Sol","Plafond","Fenêtres / vitrages","Radiateur","Éclairage","Prises électriques"],
+  "Dressing": ["Porte","Murs","Sol","Plafond","Éclairage","Placards / étagères"],
+  "Buanderie": ["Porte","Murs","Sol","Plafond","Éclairage","Prises électriques","Arrivée d’eau","Évacuation d’eau","VMC"],
+  "Cave": ["Porte","Serrure","Murs","Sol","Plafond","Éclairage","Ventilation"],
+  "Parking / garage": ["Accès","Porte / portail","Télécommande","Sol","Murs","Plafond","Éclairage","Prise électrique"],
+  "Autre": ["Murs","Sol","Plafond","Éclairage","Prises électriques"]
+};
+
+
+/* db.js */
+const DATABASE_NAME = "etat_des_lieux_v4";
+const DATABASE_VERSION = 1;
+const RECORDS_STORE = "records";
+
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
+
+    request.onupgradeneeded = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains(RECORDS_STORE)) {
+        database.createObjectStore(RECORDS_STORE, { keyPath: "id" });
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveRecord(record) {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(RECORDS_STORE, "readwrite");
+    transaction.objectStore(RECORDS_STORE).put(record);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function readRecord(id) {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const request = database.transaction(RECORDS_STORE).objectStore(RECORDS_STORE).get(id);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function readAllRecords() {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const request = database.transaction(RECORDS_STORE).objectStore(RECORDS_STORE).getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function removeRecord(id) {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(RECORDS_STORE, "readwrite");
+    transaction.objectStore(RECORDS_STORE).delete(id);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+
+/* signature.js */
+class SignatureCanvas {
+  constructor(canvas, onChange = () => {}) {
+    if (!(canvas instanceof HTMLCanvasElement)) {
+      throw new TypeError("Un canvas valide est requis.");
+    }
+
+    this.canvas = canvas;
+    this.context = canvas.getContext("2d");
+    this.onChange = onChange;
+    this.drawing = false;
+    this.empty = true;
+    this.lastPoint = null;
+    this.pendingDataUrl = "";
+
+    this.handlePointerDown = this.handlePointerDown.bind(this);
+    this.handlePointerMove = this.handlePointerMove.bind(this);
+    this.handlePointerUp = this.handlePointerUp.bind(this);
+    this.resize = this.resize.bind(this);
+
+    this.canvas.style.touchAction = "none";
+    this.canvas.addEventListener("pointerdown", this.handlePointerDown);
+    this.canvas.addEventListener("pointermove", this.handlePointerMove);
+    this.canvas.addEventListener("pointerup", this.handlePointerUp);
+    this.canvas.addEventListener("pointercancel", this.handlePointerUp);
+    this.canvas.addEventListener("pointerleave", this.handlePointerUp);
+
+    this.resizeObserver = new ResizeObserver(this.resize);
+    this.resizeObserver.observe(this.canvas.parentElement);
+    this.resize();
+  }
+
+  resize() {
+    const previousData = this.empty ? "" : this.toDataURL();
+    const rectangle = this.canvas.getBoundingClientRect();
+    const pixelRatio = Math.max(window.devicePixelRatio || 1, 1);
+    const width = Math.max(Math.round(rectangle.width * pixelRatio), 1);
+    const height = Math.max(Math.round(rectangle.height * pixelRatio), 1);
+
+    if (this.canvas.width === width && this.canvas.height === height) {
+      return;
+    }
+
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    this.context.lineWidth = 2.2;
+    this.context.lineCap = "round";
+    this.context.lineJoin = "round";
+    this.context.strokeStyle = "#0f172a";
+
+    if (previousData) {
+      this.fromDataURL(previousData);
+    } else if (this.pendingDataUrl) {
+      const pending = this.pendingDataUrl;
+      this.pendingDataUrl = "";
+      this.fromDataURL(pending);
+    }
+  }
+
+  pointFromEvent(event) {
+    const rectangle = this.canvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rectangle.left,
+      y: event.clientY - rectangle.top
+    };
+  }
+
+  handlePointerDown(event) {
+    event.preventDefault();
+    this.canvas.setPointerCapture?.(event.pointerId);
+    this.drawing = true;
+    this.lastPoint = this.pointFromEvent(event);
+    this.context.beginPath();
+    this.context.moveTo(this.lastPoint.x, this.lastPoint.y);
+  }
+
+  handlePointerMove(event) {
+    if (!this.drawing) return;
+    event.preventDefault();
+
+    const nextPoint = this.pointFromEvent(event);
+    const middlePoint = {
+      x: (this.lastPoint.x + nextPoint.x) / 2,
+      y: (this.lastPoint.y + nextPoint.y) / 2
+    };
+
+    this.context.quadraticCurveTo(
+      this.lastPoint.x,
+      this.lastPoint.y,
+      middlePoint.x,
+      middlePoint.y
+    );
+    this.context.stroke();
+
+    this.lastPoint = nextPoint;
+    this.empty = false;
+  }
+
+  handlePointerUp(event) {
+    if (!this.drawing) return;
+    event.preventDefault();
+    this.drawing = false;
+    this.lastPoint = null;
+    this.canvas.releasePointerCapture?.(event.pointerId);
+    this.onChange(this.toDataURL());
+  }
+
+  clear({ notify = true } = {}) {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.empty = true;
+    this.pendingDataUrl = "";
+    if (notify) this.onChange("");
+  }
+
+  isEmpty() {
+    return this.empty;
+  }
+
+  toDataURL() {
+    return this.empty ? "" : this.canvas.toDataURL("image/png");
+  }
+
+  fromDataURL(dataUrl) {
+    if (!dataUrl) {
+      this.clear({ notify: false });
+      return;
+    }
+
+    const rectangle = this.canvas.getBoundingClientRect();
+    if (rectangle.width < 10 || rectangle.height < 10) {
+      this.pendingDataUrl = dataUrl;
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => {
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.context.drawImage(image, 0, 0, rectangle.width, rectangle.height);
+      this.empty = false;
+    };
+    image.src = dataUrl;
+  }
+}
+
+
+/* pdf.js */
+const PAGE_WIDTH = 210;
+const PAGE_HEIGHT = 297;
+const MARGIN = 14;
+const CONTENT_TOP = 28;
+const CONTENT_BOTTOM = 278;
+
+function formatDate(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
+}
+
+function conditionColor(condition) {
+  const value = String(condition || "").toLowerCase();
+  if (value.includes("bon") || value.includes("neuf")) return [221, 238, 221];
+  if (value.includes("usage") || value.includes("passable")) return [255, 241, 191];
+  if (value.includes("mauvais") || value.includes("remplacer")) return [246, 209, 209];
+  return [242, 243, 244];
+}
+
+function getPreflightIssues(record) {
+  const issues = [];
+
+  if (!record.property.address) issues.push("Adresse du logement non renseignée.");
+  if (!record.parties.landlord) issues.push("Bailleur ou mandataire non renseigné.");
+  if (!record.parties.tenant) issues.push("Locataire non renseigné.");
+
+  const unvalidatedRooms = record.rooms.filter((room) => !room.validated);
+  if (unvalidatedRooms.length) {
+    issues.push(`${unvalidatedRooms.length} pièce(s) ne sont pas validées.`);
+  }
+
+  if (!record.signatures.tenantName || !record.signatures.tenantData) {
+    issues.push("Signature du locataire incomplète.");
+  }
+
+  if (!record.signatures.landlordName || !record.signatures.landlordData) {
+    issues.push("Signature du bailleur ou mandataire incomplète.");
+  }
+
+  return issues;
+}
+
+async function generatePdf(record) {
+  if (!window.jspdf?.jsPDF) {
+    throw new Error("La bibliothèque PDF ne s’est pas chargée.");
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
+
+  const C = {
+    dark: [47, 52, 55],
+    light: [242, 243, 244],
+    line: [205, 209, 212],
+    muted: [100, 116, 139],
+    white: [255, 255, 255]
+  };
+
+  let y = CONTENT_TOP;
+
+  function header() {
+    doc.setTextColor(...C.dark);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+
+    const title = record.type === "Sortie"
+      ? "ÉTAT DES LIEUX DE SORTIE"
+      : "ÉTAT DES LIEUX D’ENTRÉE";
+
+    doc.text(title, MARGIN, 11);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(...C.muted);
+    doc.text(`Référence : ${record.property.lot || record.id}`, PAGE_WIDTH - MARGIN, 8, { align: "right" });
+    doc.text(`Date : ${formatDate(record.date)}`, PAGE_WIDTH - MARGIN, 13, { align: "right" });
+
+    doc.setDrawColor(...C.dark);
+    doc.setLineWidth(0.5);
+    doc.line(MARGIN, 20, PAGE_WIDTH - MARGIN, 20);
+  }
+
+  function footer(pageNumber, totalPages) {
+    doc.setDrawColor(...C.line);
+    doc.setLineWidth(0.2);
+    doc.line(MARGIN, 282, PAGE_WIDTH - MARGIN, 282);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...C.muted);
+    doc.text("État des lieux · Document établi contradictoirement entre les parties", MARGIN, 287);
+    doc.text(`Page ${pageNumber} / ${totalPages}`, PAGE_WIDTH - MARGIN, 287, { align: "right" });
+
+    doc.setFontSize(5.5);
+    doc.text("Les annexes photographiques font partie intégrante du présent document.", MARGIN, 291);
+  }
+
+  function newPage() {
+    doc.addPage();
+    header();
+    y = CONTENT_TOP;
+  }
+
+  function ensure(height) {
+    if (y + height > CONTENT_BOTTOM) newPage();
+  }
+
+  function title(text) {
+    ensure(11);
+    doc.setFillColor(...C.dark);
+    doc.roundedRect(MARGIN, y, PAGE_WIDTH - (MARGIN * 2), 8, 1.5, 1.5, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...C.white);
+    doc.text(text, MARGIN + 4, y + 5.4);
+    y += 11;
+  }
+
+  header();
+
+  title("INFORMATIONS GÉNÉRALES");
+  doc.autoTable({
+    startY: y,
+    margin: { left: MARGIN, right: MARGIN, top: CONTENT_TOP },
+    theme: "grid",
+    head: [["Champ", "Valeur"]],
+    body: [
+      ["Adresse", record.property.address || "—"],
+      ["Lot / référence", record.property.lot || "—"],
+      ["Nature", record.property.nature || "—"],
+      ["Meublé", record.property.furnished || "—"],
+      ["Bailleur / mandataire", record.parties.landlord || "—"],
+      ["Locataire", record.parties.tenant || "—"],
+      ["Téléphone", record.parties.phone || "—"],
+      ["Email", record.parties.email || "—"]
+    ],
+    styles: { font: "helvetica", fontSize: 8, cellPadding: 3, lineColor: C.line, lineWidth: 0.2 },
+    headStyles: { fillColor: C.dark, textColor: C.white }
+  });
+
+  y = doc.lastAutoTable.finalY + 7;
+
+  title(record.type === "Sortie" ? "COMPTEURS ET ACCÈS RESTITUÉS" : "COMPTEURS ET ACCÈS");
+  doc.autoTable({
+    startY: y,
+    margin: { left: MARGIN, right: MARGIN, top: CONTENT_TOP },
+    theme: "grid",
+    head: [["Élément", "Valeur"]],
+    body: [
+      ["Électricité HP", record.meters.electricityHp || "—"],
+      ["Électricité HC", record.meters.electricityHc || "—"],
+      ["Gaz", record.meters.gas || "—"],
+      ["Eau froide", record.meters.coldWater || "—"],
+      ["Eau chaude", record.meters.hotWater || "—"],
+      ["Clés porte", record.access.doorKeys || "0"],
+      ["Badge / Vigik", record.access.badges || "0"],
+      ["Bip parking", record.access.parkingRemotes || "0"]
+    ],
+    styles: { font: "helvetica", fontSize: 8, cellPadding: 3, lineColor: C.line, lineWidth: 0.2 },
+    headStyles: { fillColor: C.dark, textColor: C.white }
+  });
+
+  y = doc.lastAutoTable.finalY + 7;
+
+  for (const [roomIndex, room] of record.rooms.entries()) {
+    title(`${roomIndex + 1}. ${room.name}`);
+
+    const isExit = record.type === "Sortie";
+    doc.autoTable({
+      startY: y,
+      margin: { left: MARGIN, right: MARGIN, top: CONTENT_TOP },
+      theme: "grid",
+      showHead: "everyPage",
+      rowPageBreak: "avoid",
+      head: isExit
+        ? [["Élément", "Description", "État d’entrée", "État de sortie"]]
+        : [["Élément", "Description", "État"]],
+      body: room.elements.map((element) => (
+        isExit
+          ? [element.name, element.description || "—", element.entryCondition, element.exitCondition]
+          : [element.name, element.description || "—", element.entryCondition]
+      )),
+      styles: {
+        font: "helvetica",
+        fontSize: 7.2,
+        cellPadding: 2.4,
+        lineColor: C.line,
+        lineWidth: 0.2,
+        valign: "middle"
+      },
+      headStyles: { fillColor: C.light, textColor: C.dark },
+      didParseCell(data) {
+        if (data.section !== "body") return;
+        const columns = isExit ? [2, 3] : [2];
+        if (columns.includes(data.column.index)) {
+          data.cell.styles.fillColor = conditionColor(data.cell.raw);
+          data.cell.styles.fontStyle = "bold";
+        }
+      }
+    });
+
+    y = doc.lastAutoTable.finalY + 5;
+
+    if (room.observation) {
+      const lines = doc.splitTextToSize(room.observation, PAGE_WIDTH - (MARGIN * 2) - 10);
+      const height = Math.max(12, (lines.length * 4) + 8);
+      ensure(height);
+
+      doc.setFillColor(...C.light);
+      doc.roundedRect(MARGIN, y, PAGE_WIDTH - (MARGIN * 2), height, 1.5, 1.5, "F");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...C.dark);
+      doc.text(lines, MARGIN + 5, y + 6);
+      y += height + 5;
+    }
+
+    const photos = room.photos.slice(0, 4);
+    if (photos.length) {
+      const gap = 4;
+      const width = (PAGE_WIDTH - (MARGIN * 2) - gap) / 2;
+      const height = 42;
+
+      for (let index = 0; index < photos.length; index += 1) {
+        if (index % 2 === 0) ensure(height + 8);
+
+        const column = index % 2;
+        const x = MARGIN + (column * (width + gap));
+
+        try {
+          doc.addImage(photos[index].data, "JPEG", x, y, width, height, undefined, "FAST");
+        } catch {
+          doc.setFillColor(...C.light);
+          doc.rect(x, y, width, height, "F");
+        }
+
+        if (column === 1 || index === photos.length - 1) y += height + 8;
+      }
+    }
+  }
+
+  title("OBSERVATIONS ET RÉSERVES");
+  const generalText = [
+    record.observations || "Aucune observation générale.",
+    record.reservations || ""
+  ].filter(Boolean).join("\n\n");
+
+  const generalLines = doc.splitTextToSize(generalText, PAGE_WIDTH - (MARGIN * 2) - 10);
+  const generalHeight = Math.max(24, (generalLines.length * 4) + 10);
+  ensure(generalHeight);
+
+  doc.setFillColor(...C.light);
+  doc.roundedRect(MARGIN, y, PAGE_WIDTH - (MARGIN * 2), generalHeight, 2, 2, "F");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...C.dark);
+  doc.text(generalLines, MARGIN + 5, y + 6);
+  y += generalHeight + 7;
+
+  if (y + 62 > CONTENT_BOTTOM) newPage();
+
+  title("SIGNATURES");
+
+  const boxWidth = (PAGE_WIDTH - (MARGIN * 2) - 6) / 2;
+  const boxHeight = 48;
+
+  doc.setDrawColor(...C.line);
+  doc.rect(MARGIN, y, boxWidth, boxHeight);
+  doc.rect(MARGIN + boxWidth + 6, y, boxWidth, boxHeight);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...C.dark);
+  doc.text(`Locataire : ${record.signatures.tenantName || record.parties.tenant || "—"}`, MARGIN + 4, y + 6);
+  doc.text(`Bailleur / mandataire : ${record.signatures.landlordName || record.parties.landlord || "—"}`, MARGIN + boxWidth + 10, y + 6);
+
+  try {
+    if (record.signatures.tenantData) {
+      doc.addImage(record.signatures.tenantData, "PNG", MARGIN + 6, y + 10, boxWidth - 12, 30);
+    }
+    if (record.signatures.landlordData) {
+      doc.addImage(record.signatures.landlordData, "PNG", MARGIN + boxWidth + 12, y + 10, boxWidth - 12, 30);
+    }
+  } catch {}
+
+  const totalPages = doc.getNumberOfPages();
+  for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
+    doc.setPage(pageNumber);
+    header();
+    footer(pageNumber, totalPages);
+  }
+
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+  const opened = window.open(url, "_blank");
+
+  if (!opened) {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `etat-des-lieux-${record.type.toLowerCase()}-${record.property.address || "logement"}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+
+/* app.js */
+
+
+
+
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+const state = {
+  currentRecord: null,
+  wizardStep: 1,
+  wizardType: "Entrée",
+  autosaveTimer: null,
+  referencePdfUrl: null
+};
+
+let tenantSignature;
+let landlordSignature;
+
+const ids = [
+  "backButton","headerSubtitle","headerProgress","progressPercent","progressBar",
+  "catalogView","editorView","editorActions","catalogSearch","catalogList",
+  "newRecordButton","saveStatus","saveButton","generatePdfButton","roomsList",
+  "addRoomButton","wizardModal","closeWizardButton","wizardPreviousButton",
+  "wizardNextButton","wizardRoomChoices","wizardReferencePdf","roomCatalogModal",
+  "closeRoomCatalogButton","roomCatalog","preflightModal","preflightContent",
+  "closePreflightButton","returnToFormButton","forcePdfButton","referencePdfCard",
+  "referencePdfName","previewReferencePdfButton","referencePdfModal",
+  "referencePdfFrame","closeReferencePdfButton","recordType","recordDate",
+  "propertyAddress","propertyLot","propertyNature","propertyFurnished",
+  "landlordName","tenantName","tenantPhone","tenantEmail","electricityHp",
+  "electricityHc","gasIndex","coldWaterIndex","hotWaterIndex","doorKeys",
+  "badges","parkingRemotes","metersNotApplicable","generalObservations",
+  "generalReservations","noGeneralObservation","tenantSignerName",
+  "landlordSignerName","wizardAddress","wizardLot","wizardNature",
+  "wizardFurnished","wizardMainRoomCount"
+];
+
+const el = {};
+
+function cacheElements() {
+  ids.forEach((id) => {
+    el[id] = document.getElementById(id);
+  });
+}
+
+function uid() {
+  return crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+}
+
+function localDateTime() {
+  return new Date(Date.now() - (new Date().getTimezoneOffset() * 60000))
+    .toISOString()
+    .slice(0, 16);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function conditionOptions(selected) {
+  return CONDITIONS.map((condition) => `
+    <option ${condition === selected ? "selected" : ""}>${escapeHtml(condition)}</option>
+  `).join("");
+}
+
+function createElement(name) {
+  return {
+    id: uid(),
+    name,
+    entryCondition: "Non vérifié",
+    exitCondition: "Non vérifié",
+    description: ""
+  };
+}
+
+function createRoom(templateName, roomName = templateName) {
+  return {
+    id: uid(),
+    name: roomName,
+    observation: "",
+    validated: false,
+    elements: ROOM_TEMPLATES[templateName].map(createElement),
+    photos: []
+  };
+}
+
+function createEmptyRecord() {
+  const now = new Date().toISOString();
+
+  return {
+    id: uid(),
+    type: "Entrée",
+    date: localDateTime(),
+    status: "Brouillon",
+    createdAt: now,
+    updatedAt: now,
+    property: {
+      address: "",
+      lot: "",
+      nature: "Appartement",
+      furnished: "Non"
+    },
+    parties: {
+      landlord: "",
+      tenant: "",
+      phone: "",
+      email: ""
+    },
+    meters: {
+      electricityHp: "",
+      electricityHc: "",
+      gas: "",
+      coldWater: "",
+      hotWater: "",
+      notApplicable: false
+    },
+    access: {
+      doorKeys: "0",
+      badges: "0",
+      parkingRemotes: "0"
+    },
+    rooms: [],
+    observations: "",
+    reservations: "",
+    noObservation: false,
+    signatures: {
+      tenantName: "",
+      landlordName: "",
+      tenantData: "",
+      landlordData: ""
+    },
+    referencePdf: null
+  };
+}
+
+function openModal(modal) {
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeModal(modal) {
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function showCatalog() {
+  el.catalogView.classList.add("is-active");
+  el.editorView.classList.remove("is-active");
+  el.editorActions.classList.add("is-hidden");
+  el.backButton.classList.add("is-hidden");
+  el.headerProgress.classList.add("is-hidden");
+  el.headerSubtitle.textContent = "Mes dossiers";
+  renderCatalog();
+}
+
+function showEditor() {
+  el.catalogView.classList.remove("is-active");
+  el.editorView.classList.add("is-active");
+  el.editorActions.classList.remove("is-hidden");
+  el.backButton.classList.remove("is-hidden");
+  el.headerProgress.classList.remove("is-hidden");
+  updateHeader();
+  updateProgress();
+}
+
+function updateHeader() {
+  if (!state.currentRecord) return;
+  el.headerSubtitle.textContent = [
+    state.currentRecord.type,
+    state.currentRecord.property.address || "Formulaire en cours"
+  ].join(" · ");
+}
+
+function statusClass(status) {
+  if (status === "Terminé") return "status-badge status-badge--done";
+  if (status === "À signer") return "status-badge status-badge--sign";
+  return "status-badge";
+}
+
+async function renderCatalog() {
+  const search = el.catalogSearch.value.trim().toLowerCase();
+  const records = (await readAllRecords())
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .filter((record) => [
+      record.property.address,
+      record.property.lot,
+      record.parties.tenant,
+      record.type
+    ].join(" ").toLowerCase().includes(search));
+
+  if (!records.length) {
+    el.catalogList.innerHTML = `
+      <div class="empty-state">
+        Aucun dossier enregistré.<br>Créez votre premier état des lieux.
+      </div>`;
+    return;
+  }
+
+  el.catalogList.innerHTML = records.map((record) => `
+    <article class="catalog-card">
+      <span class="${statusClass(record.status)}">${escapeHtml(record.status)}</span>
+      <h3>${escapeHtml(record.property.address || "Adresse non renseignée")}</h3>
+      <div class="catalog-card__meta">
+        ${escapeHtml(record.property.lot || "Sans lot")} · ${escapeHtml(record.type)}<br>
+        ${record.parties.tenant ? `Locataire : ${escapeHtml(record.parties.tenant)}<br>` : ""}
+        Modifié le ${new Date(record.updatedAt).toLocaleString("fr-FR")}
+      </div>
+      <div class="catalog-card__actions">
+        <button type="button" data-open-record="${record.id}">Ouvrir</button>
+        <button class="button button--secondary" type="button" data-duplicate-record="${record.id}">Dupliquer en sortie</button>
+        <button class="button button--danger" type="button" data-delete-record="${record.id}">Supprimer</button>
+      </div>
+    </article>
+  `).join("");
+
+  $$("[data-open-record]").forEach((button) => {
+    button.onclick = () => openRecord(button.dataset.openRecord);
+  });
+
+  $$("[data-duplicate-record]").forEach((button) => {
+    button.onclick = () => duplicateRecordAsExit(button.dataset.duplicateRecord);
+  });
+
+  $$("[data-delete-record]").forEach((button) => {
+    button.onclick = () => deleteRecord(button.dataset.deleteRecord);
+  });
+}
+
+async function openRecord(recordId) {
+  const record = await readRecord(recordId);
+  if (!record) {
+    alert("Ce dossier est introuvable.");
+    return;
+  }
+  state.currentRecord = record;
+  hydrateEditor();
+  showEditor();
+}
+
+async function duplicateRecordAsExit(recordId) {
+  const source = await readRecord(recordId);
+  if (!source) return;
+
+  const copy = structuredClone(source);
+  const now = new Date().toISOString();
+
+  copy.id = uid();
+  copy.type = "Sortie";
+  copy.status = "Brouillon";
+  copy.date = localDateTime();
+  copy.createdAt = now;
+  copy.updatedAt = now;
+  copy.signatures = { tenantName: "", landlordName: "", tenantData: "", landlordData: "" };
+  copy.rooms = copy.rooms.map((room) => ({
+    ...room,
+    id: uid(),
+    validated: false,
+    photos: [],
+    elements: room.elements.map((element) => ({
+      ...element,
+      id: uid(),
+      exitCondition: "Non vérifié"
+    }))
+  }));
+
+  await saveRecord(copy);
+  renderCatalog();
+}
+
+async function deleteRecord(recordId) {
+  if (!confirm("Supprimer définitivement ce dossier de cet appareil ?")) return;
+  await removeRecord(recordId);
+  renderCatalog();
+}
+
+function hydrateEditor() {
+  const r = state.currentRecord;
+
+  el.recordType.value = r.type;
+  el.recordDate.value = r.date;
+  el.propertyAddress.value = r.property.address;
+  el.propertyLot.value = r.property.lot;
+  el.propertyNature.value = r.property.nature;
+  el.propertyFurnished.value = r.property.furnished;
+
+  el.landlordName.value = r.parties.landlord;
+  el.tenantName.value = r.parties.tenant;
+  el.tenantPhone.value = r.parties.phone;
+  el.tenantEmail.value = r.parties.email;
+
+  el.electricityHp.value = r.meters.electricityHp;
+  el.electricityHc.value = r.meters.electricityHc;
+  el.gasIndex.value = r.meters.gas;
+  el.coldWaterIndex.value = r.meters.coldWater;
+  el.hotWaterIndex.value = r.meters.hotWater;
+  el.metersNotApplicable.checked = r.meters.notApplicable;
+
+  el.doorKeys.value = r.access.doorKeys;
+  el.badges.value = r.access.badges;
+  el.parkingRemotes.value = r.access.parkingRemotes;
+
+  el.generalObservations.value = r.observations;
+  el.generalReservations.value = r.reservations;
+  el.noGeneralObservation.checked = r.noObservation;
+
+  el.tenantSignerName.value = r.signatures.tenantName;
+  el.landlordSignerName.value = r.signatures.landlordName;
+
+  tenantSignature.fromDataURL(r.signatures.tenantData);
+  landlordSignature.fromDataURL(r.signatures.landlordData);
+
+  updateReferencePdfCard();
+  renderRooms();
+  updateProgress();
+  updateHeader();
+}
+
+function collectEditorValues() {
+  const r = state.currentRecord;
+
+  r.type = el.recordType.value;
+  r.date = el.recordDate.value;
+  r.property.address = el.propertyAddress.value.trim();
+  r.property.lot = el.propertyLot.value.trim();
+  r.property.nature = el.propertyNature.value;
+  r.property.furnished = el.propertyFurnished.value;
+
+  r.parties.landlord = el.landlordName.value.trim();
+  r.parties.tenant = el.tenantName.value.trim();
+  r.parties.phone = el.tenantPhone.value.trim();
+  r.parties.email = el.tenantEmail.value.trim();
+
+  r.meters.electricityHp = el.electricityHp.value.trim();
+  r.meters.electricityHc = el.electricityHc.value.trim();
+  r.meters.gas = el.gasIndex.value.trim();
+  r.meters.coldWater = el.coldWaterIndex.value.trim();
+  r.meters.hotWater = el.hotWaterIndex.value.trim();
+  r.meters.notApplicable = el.metersNotApplicable.checked;
+
+  r.access.doorKeys = el.doorKeys.value || "0";
+  r.access.badges = el.badges.value || "0";
+  r.access.parkingRemotes = el.parkingRemotes.value || "0";
+
+  r.observations = el.generalObservations.value.trim();
+  r.reservations = el.generalReservations.value.trim();
+  r.noObservation = el.noGeneralObservation.checked;
+
+  r.signatures.tenantName = el.tenantSignerName.value.trim();
+  r.signatures.landlordName = el.landlordSignerName.value.trim();
+  r.signatures.tenantData = tenantSignature.toDataURL();
+  r.signatures.landlordData = landlordSignature.toDataURL();
+
+  r.updatedAt = new Date().toISOString();
+  r.status = calculateStatus(r);
+}
+
+function calculateProgress(r) {
+  const information = Boolean(r.property.address && r.date && r.property.nature);
+  const parties = Boolean(r.parties.landlord && r.parties.tenant);
+  const meters = r.meters.notApplicable || Boolean(
+    r.meters.electricityHp || r.meters.electricityHc || r.meters.gas ||
+    r.meters.coldWater || r.meters.hotWater ||
+    Number(r.access.doorKeys) || Number(r.access.badges) || Number(r.access.parkingRemotes)
+  );
+  const roomRatio = r.rooms.length
+    ? r.rooms.filter((room) => room.validated).length / r.rooms.length
+    : 0;
+  const observations = r.noObservation || Boolean(r.observations || r.reservations);
+  const signatures = Boolean(
+    r.signatures.tenantName && r.signatures.tenantData &&
+    r.signatures.landlordName && r.signatures.landlordData
+  );
+
+  return Math.round(
+    (information ? 15 : 0) +
+    (parties ? 10 : 0) +
+    (meters ? 15 : 0) +
+    (roomRatio * 45) +
+    (observations ? 5 : 0) +
+    (signatures ? 10 : 0)
+  );
+}
+
+function calculateStatus(r) {
+  const progress = calculateProgress(r);
+  if (progress === 100) return "Terminé";
+  if (
+    r.signatures.tenantName || r.signatures.tenantData ||
+    r.signatures.landlordName || r.signatures.landlordData
+  ) return "À signer";
+  return "Brouillon";
+}
+
+function updateProgress() {
+  if (!state.currentRecord) return;
+  collectEditorValues();
+  const progress = calculateProgress(state.currentRecord);
+  el.progressPercent.textContent = `${progress} %`;
+  el.progressBar.style.width = `${progress}%`;
+  updateHeader();
+}
+
+async function saveCurrentRecord({ silent = false } = {}) {
+  if (!state.currentRecord) return;
+  collectEditorValues();
+  if (!silent) el.saveStatus.textContent = "Enregistrement…";
+  await saveRecord(state.currentRecord);
+  el.saveStatus.textContent = "Enregistré";
+  updateProgress();
+}
+
+function scheduleAutosave() {
+  clearTimeout(state.autosaveTimer);
+  el.saveStatus.textContent = "Modifications non enregistrées";
+  state.autosaveTimer = setTimeout(() => saveCurrentRecord({ silent: true }), 800);
+}
+
+function uniqueRoomName(baseName) {
+  const names = state.currentRecord.rooms.map((room) => room.name.toLowerCase());
+  if (!names.includes(baseName.toLowerCase())) return baseName;
+  let index = 2;
+  while (names.includes(`${baseName} ${index}`.toLowerCase())) index += 1;
+  return `${baseName} ${index}`;
+}
+
+function findRoom(roomId) {
+  return state.currentRecord.rooms.find((room) => room.id === roomId);
+}
+
+function findElement(roomId, elementId) {
+  return findRoom(roomId).elements.find((element) => element.id === elementId);
+}
+
+function renderRooms() {
+  const r = state.currentRecord;
+  const isExit = r.type === "Sortie";
+
+  if (!r.rooms.length) {
+    el.roomsList.innerHTML = `<div class="empty-state">Aucune pièce ajoutée.</div>`;
+    return;
+  }
+
+  el.roomsList.innerHTML = r.rooms.map((room) => `
+    <article class="room-card ${room.validated ? "is-validated" : ""}">
+      <div class="room-card__header">
+        <label class="room-card__title">
+          Nom de la pièce
+          <input data-room-id="${room.id}" data-room-field="name" value="${escapeHtml(room.name)}">
+        </label>
+        <div class="room-card__actions">
+          <button class="button button--secondary" type="button" data-room-conform="${room.id}">Tout est conforme</button>
+          <button class="button button--secondary" type="button" data-room-duplicate="${room.id}">Dupliquer</button>
+          <button class="button button--danger" type="button" data-room-delete="${room.id}">Supprimer</button>
+        </div>
+      </div>
+
+      <label class="room-observation">
+        Observation générale de la pièce
+        <textarea rows="3" data-room-id="${room.id}" data-room-field="observation">${escapeHtml(room.observation || "")}</textarea>
+      </label>
+
+      <div class="elements-list">
+        ${room.elements.map((element) => `
+          <div class="element-card ${isExit ? "element-card--exit" : ""}">
+            <label>
+              Élément
+              <input data-room-id="${room.id}" data-element-id="${element.id}" data-element-field="name" value="${escapeHtml(element.name)}">
+            </label>
+
+            ${isExit ? `
+              <label>
+                État d’entrée
+                <select data-room-id="${room.id}" data-element-id="${element.id}" data-element-field="entryCondition">
+                  ${conditionOptions(element.entryCondition)}
+                </select>
+              </label>
+              <label class="element-card__description">
+                État de sortie
+                <select data-room-id="${room.id}" data-element-id="${element.id}" data-element-field="exitCondition">
+                  ${conditionOptions(element.exitCondition)}
+                </select>
+              </label>
+            ` : `
+              <label>
+                État
+                <select data-room-id="${room.id}" data-element-id="${element.id}" data-element-field="entryCondition">
+                  ${conditionOptions(element.entryCondition)}
+                </select>
+              </label>
+            `}
+
+            <label class="element-card__description">
+              Description
+              <input data-room-id="${room.id}" data-element-id="${element.id}" data-element-field="description" value="${escapeHtml(element.description || "")}" placeholder="Description ou anomalie">
+            </label>
+
+            <button class="element-card__remove" type="button" data-element-delete="${room.id}:${element.id}" aria-label="Supprimer l’élément">×</button>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="room-card__footer">
+        <button class="button button--secondary" type="button" data-element-add="${room.id}">+ Ajouter un élément</button>
+        <label class="button button--secondary photo-control">
+          Ajouter des photos
+          <input type="file" accept="image/*" capture="environment" multiple data-photo-input="${room.id}">
+        </label>
+      </div>
+
+      <div class="photo-grid">
+        ${room.photos.map((photo, index) => `
+          <div class="photo-card">
+            <img src="${photo.data}" alt="Photo de ${escapeHtml(room.name)}">
+            <button class="button button--danger" type="button" data-photo-delete="${room.id}:${index}">Supprimer</button>
+          </div>
+        `).join("")}
+      </div>
+
+      <button class="validate-room-button ${room.validated ? "button--secondary" : ""}" type="button" data-room-validate="${room.id}">
+        ${room.validated ? "✓ Pièce validée" : "Valider la pièce"}
+      </button>
+    </article>
+  `).join("");
+
+  bindRoomEvents();
+}
+
+function bindRoomEvents() {
+  $$("[data-room-field]").forEach((field) => {
+    field.oninput = () => {
+      const room = findRoom(field.dataset.roomId);
+      room[field.dataset.roomField] = field.value;
+      room.validated = false;
+      scheduleAutosave();
+      updateProgress();
+    };
+  });
+
+  $$("[data-element-field]").forEach((field) => {
+    const update = () => {
+      const element = findElement(field.dataset.roomId, field.dataset.elementId);
+      element[field.dataset.elementField] = field.value;
+      findRoom(field.dataset.roomId).validated = false;
+      scheduleAutosave();
+      updateProgress();
+    };
+    field.oninput = update;
+    field.onchange = update;
+  });
+
+  $$("[data-room-conform]").forEach((button) => {
+    button.onclick = () => {
+      const room = findRoom(button.dataset.roomConform);
+      room.elements.forEach((element) => {
+        element.entryCondition = "Bon état";
+        if (state.currentRecord.type === "Sortie") element.exitCondition = "Bon état";
+      });
+      room.validated = true;
+      renderRooms();
+      scheduleAutosave();
+      updateProgress();
+    };
+  });
+
+  $$("[data-room-duplicate]").forEach((button) => {
+    button.onclick = () => {
+      const index = state.currentRecord.rooms.findIndex((room) => room.id === button.dataset.roomDuplicate);
+      const source = state.currentRecord.rooms[index];
+      const copy = structuredClone(source);
+      copy.id = uid();
+      copy.name = uniqueRoomName(source.name);
+      copy.validated = false;
+      copy.photos = [];
+      copy.elements = copy.elements.map((element) => ({ ...element, id: uid() }));
+      state.currentRecord.rooms.splice(index + 1, 0, copy);
+      renderRooms();
+      scheduleAutosave();
+      updateProgress();
+    };
+  });
+
+  $$("[data-room-delete]").forEach((button) => {
+    button.onclick = () => {
+      if (!confirm("Supprimer cette pièce ?")) return;
+      state.currentRecord.rooms = state.currentRecord.rooms.filter((room) => room.id !== button.dataset.roomDelete);
+      renderRooms();
+      scheduleAutosave();
+      updateProgress();
+    };
+  });
+
+  $$("[data-element-add]").forEach((button) => {
+    button.onclick = () => {
+      const room = findRoom(button.dataset.elementAdd);
+      room.elements.push(createElement("Nouvel élément"));
+      room.validated = false;
+      renderRooms();
+      scheduleAutosave();
+      updateProgress();
+    };
+  });
+
+  $$("[data-element-delete]").forEach((button) => {
+    button.onclick = () => {
+      const [roomId, elementId] = button.dataset.elementDelete.split(":");
+      const room = findRoom(roomId);
+      room.elements = room.elements.filter((element) => element.id !== elementId);
+      room.validated = false;
+      renderRooms();
+      scheduleAutosave();
+      updateProgress();
+    };
+  });
+
+  $$("[data-photo-input]").forEach((input) => {
+    input.onchange = async () => {
+      const room = findRoom(input.dataset.photoInput);
+      for (const file of input.files) {
+        room.photos.push({ id: uid(), data: await compressImage(file) });
+      }
+      input.value = "";
+      renderRooms();
+      scheduleAutosave();
+    };
+  });
+
+  $$("[data-photo-delete]").forEach((button) => {
+    button.onclick = () => {
+      const [roomId, photoIndex] = button.dataset.photoDelete.split(":");
+      findRoom(roomId).photos.splice(Number(photoIndex), 1);
+      renderRooms();
+      scheduleAutosave();
+    };
+  });
+
+  $$("[data-room-validate]").forEach((button) => {
+    button.onclick = () => {
+      const room = findRoom(button.dataset.roomValidate);
+
+      if (room.validated) {
+        room.validated = false;
+        renderRooms();
+        scheduleAutosave();
+        updateProgress();
+        return;
+      }
+
+      const unverified = room.elements.filter((element) => {
+        const condition = state.currentRecord.type === "Sortie"
+          ? element.exitCondition
+          : element.entryCondition;
+        return condition === "Non vérifié";
+      }).length;
+
+      if (unverified) {
+        alert(`${unverified} élément(s) sont encore indiqués comme « Non vérifié ».`);
+        return;
+      }
+
+      room.validated = true;
+      renderRooms();
+      scheduleAutosave();
+      updateProgress();
+    };
+  });
+}
+
+async function compressImage(file) {
+  const objectUrl = URL.createObjectURL(file);
+  const image = new Image();
+
+  await new Promise((resolve, reject) => {
+    image.onload = resolve;
+    image.onerror = reject;
+    image.src = objectUrl;
+  });
+
+  const scale = Math.min(1, 1400 / image.width);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(Math.round(image.width * scale), 1);
+  canvas.height = Math.max(Math.round(image.height * scale), 1);
+  canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+  URL.revokeObjectURL(objectUrl);
+
+  return canvas.toDataURL("image/jpeg", 0.76);
+}
+
+function openWizard() {
+  state.wizardStep = 1;
+  state.wizardType = "Entrée";
+
+  $$("[data-wizard-type]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.wizardType === "Entrée");
+  });
+
+  el.wizardAddress.value = "";
+  el.wizardLot.value = "";
+  el.wizardNature.value = "Appartement";
+  el.wizardFurnished.value = "Non";
+  el.wizardMainRoomCount.value = "1";
+  el.wizardReferencePdf.value = "";
+
+  renderWizardRoomChoices();
+  updateWizard();
+  openModal(el.wizardModal);
+}
+
+function updateWizard() {
+  $$("[data-wizard-step]").forEach((step) => {
+    step.classList.toggle("is-active", Number(step.dataset.wizardStep) === state.wizardStep);
+  });
+
+  $$(".wizard__dot").forEach((dot, index) => {
+    dot.classList.toggle("is-active", index < state.wizardStep);
+  });
+
+  el.wizardPreviousButton.classList.toggle("is-hidden", state.wizardStep === 1);
+  el.wizardNextButton.textContent = state.wizardStep === 3 ? "Créer le dossier" : "Suivant";
+}
+
+function renderWizardRoomChoices() {
+  const defaults = ["Entrée / dégagement", "Séjour / pièce principale", "Cuisine", "Salle d’eau", "WC"];
+
+  el.wizardRoomChoices.innerHTML = Object.keys(ROOM_TEMPLATES).map((roomName) => `
+    <button class="room-chip ${defaults.includes(roomName) ? "is-active" : ""}" type="button" data-wizard-room="${roomName}">
+      ${escapeHtml(roomName)}
+    </button>
+  `).join("");
+
+  $$("[data-wizard-room]").forEach((button) => {
+    button.onclick = () => button.classList.toggle("is-active");
+  });
+}
+
+async function finishWizard() {
+  const record = createEmptyRecord();
+  record.type = state.wizardType;
+  record.property.address = el.wizardAddress.value.trim();
+  record.property.lot = el.wizardLot.value.trim();
+  record.property.nature = el.wizardNature.value;
+  record.property.furnished = el.wizardFurnished.value;
+
+  const selected = $$("[data-wizard-room].is-active")
+    .map((button) => button.dataset.wizardRoom)
+    .filter((name) => name !== "Chambre");
+
+  const count = Number(el.wizardMainRoomCount.value || 1);
+  const bedrooms = Math.max(0, count - 1);
+
+  for (let index = 1; index <= bedrooms; index += 1) {
+    selected.push(bedrooms === 1 ? "Chambre" : `Chambre ${index}`);
+  }
+
+  record.rooms = [...new Set(selected)].map((roomName) => {
+    const template = roomName.replace(/ \d+$/, "");
+    return createRoom(ROOM_TEMPLATES[template] ? template : "Chambre", roomName);
+  });
+
+  const file = el.wizardReferencePdf.files[0];
+  if (file) {
+    record.referencePdf = {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      data: await file.arrayBuffer()
+    };
+  }
+
+  state.currentRecord = record;
+  await saveRecord(record);
+  closeModal(el.wizardModal);
+  hydrateEditor();
+  showEditor();
+}
+
+function renderRoomCatalog() {
+  el.roomCatalog.innerHTML = Object.entries(ROOM_TEMPLATES).map(([name, roomElements]) => `
+    <button class="room-template" type="button" data-room-template="${name}">
+      <strong>${escapeHtml(name)}</strong>
+      <span>${roomElements.slice(0, 5).map(escapeHtml).join(" · ")}${roomElements.length > 5 ? "…" : ""}</span>
+    </button>
+  `).join("");
+
+  $$("[data-room-template]").forEach((button) => {
+    button.onclick = () => {
+      const template = button.dataset.roomTemplate;
+      state.currentRecord.rooms.push(createRoom(template, uniqueRoomName(template)));
+      closeModal(el.roomCatalogModal);
+      renderRooms();
+      scheduleAutosave();
+      updateProgress();
+    };
+  });
+}
+
+function updateReferencePdfCard() {
+  const pdf = state.currentRecord.referencePdf;
+  el.referencePdfCard.classList.toggle("is-hidden", !pdf);
+  if (pdf) el.referencePdfName.textContent = pdf.name;
+}
+
+function previewReferencePdf() {
+  const pdf = state.currentRecord.referencePdf;
+  if (!pdf) return;
+
+  if (state.referencePdfUrl) URL.revokeObjectURL(state.referencePdfUrl);
+  state.referencePdfUrl = URL.createObjectURL(new Blob([pdf.data], { type: "application/pdf" }));
+  el.referencePdfFrame.src = state.referencePdfUrl;
+  openModal(el.referencePdfModal);
+}
+
+function closeReferencePdf() {
+  el.referencePdfFrame.src = "";
+  closeModal(el.referencePdfModal);
+  if (state.referencePdfUrl) {
+    URL.revokeObjectURL(state.referencePdfUrl);
+    state.referencePdfUrl = null;
+  }
+}
+
+function showPreflight(issues) {
+  el.preflightContent.innerHTML = issues.length
+    ? `<p>Les points suivants méritent une vérification :</p><ul class="preflight-list">${issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>`
+    : `<div class="preflight-ok">✓ Le dossier semble complet.</div>`;
+  openModal(el.preflightModal);
+}
+
+async function requestPdf() {
+  collectEditorValues();
+  const issues = getPreflightIssues(state.currentRecord);
+  if (issues.length) {
+    showPreflight(issues);
+    return;
+  }
+  await makePdf();
+}
+
+async function makePdf() {
+  closeModal(el.preflightModal);
+  collectEditorValues();
+  try {
+    await generatePdf(state.currentRecord);
+  } catch (error) {
+    console.error(error);
+    alert(error.message || "Le PDF n’a pas pu être généré.");
+  }
+}
+
+function bindGlobalEvents() {
+  el.backButton.onclick = showCatalog;
+  el.newRecordButton.onclick = openWizard;
+  el.catalogSearch.oninput = renderCatalog;
+  el.saveButton.onclick = () => saveCurrentRecord();
+  el.generatePdfButton.onclick = requestPdf;
+
+  el.addRoomButton.onclick = () => {
+    renderRoomCatalog();
+    openModal(el.roomCatalogModal);
+  };
+
+  el.closeWizardButton.onclick = () => closeModal(el.wizardModal);
+  el.closeRoomCatalogButton.onclick = () => closeModal(el.roomCatalogModal);
+  el.closePreflightButton.onclick = () => closeModal(el.preflightModal);
+  el.returnToFormButton.onclick = () => closeModal(el.preflightModal);
+  el.forcePdfButton.onclick = makePdf;
+  el.previewReferencePdfButton.onclick = previewReferencePdf;
+  el.closeReferencePdfButton.onclick = closeReferencePdf;
+
+  $$("[data-wizard-type]").forEach((button) => {
+    button.onclick = () => {
+      state.wizardType = button.dataset.wizardType;
+      $$("[data-wizard-type]").forEach((choice) => {
+        choice.classList.toggle("is-active", choice.dataset.wizardType === state.wizardType);
+      });
+    };
+  });
+
+  el.wizardPreviousButton.onclick = () => {
+    state.wizardStep = Math.max(1, state.wizardStep - 1);
+    updateWizard();
+  };
+
+  el.wizardNextButton.onclick = async () => {
+    if (state.wizardStep < 3) {
+      state.wizardStep += 1;
+      updateWizard();
+      return;
+    }
+    await finishWizard();
+  };
+
+  [el.wizardModal, el.roomCatalogModal, el.preflightModal, el.referencePdfModal].forEach((modal) => {
+    modal.onclick = (event) => {
+      if (event.target !== modal) return;
+      if (modal === el.referencePdfModal) closeReferencePdf();
+      else closeModal(modal);
+    };
+  });
+
+  el.editorView.oninput = () => {
+    scheduleAutosave();
+    updateProgress();
+  };
+
+  el.editorView.onchange = () => {
+    scheduleAutosave();
+    updateProgress();
+  };
+
+  $$(".clear-signature-button").forEach((button) => {
+    button.onclick = () => {
+      if (button.dataset.signature === "tenant") tenantSignature.clear();
+      else landlordSignature.clear();
+      scheduleAutosave();
+      updateProgress();
+    };
+  });
+}
+
+async function initialize() {
+  cacheElements();
+
+  tenantSignature = new SignatureCanvas(
+    document.getElementById("tenantSignatureCanvas"),
+    () => {
+      scheduleAutosave();
+      updateProgress();
+    }
+  );
+
+  landlordSignature = new SignatureCanvas(
+    document.getElementById("landlordSignatureCanvas"),
+    () => {
+      scheduleAutosave();
+      updateProgress();
+    }
+  );
+
+  bindGlobalEvents();
+  await renderCatalog();
+  showCatalog();
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+      console.warn("Service worker non enregistré :", error);
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", initialize);
+
+</script>
 </body>
 </html>
