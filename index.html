@@ -142,6 +142,87 @@ button:active{transform:scale(.975)}
 @media(max-width:620px){.catalog-secondary-actions>*{flex:1 1 100%}.inventory-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.editor-actions button{min-height:42px}}
 .status-badge--ready{background:#eff6ff;color:#1d4ed8}
 
+
+/* V8 — optimisation mobile : moins de longueur, moins de boutons visibles, même niveau de détail */
+.room-summary{display:none}
+.room-card__body{display:block}
+.room-menu{position:relative}
+.room-menu>summary{list-style:none;cursor:pointer;user-select:none}
+.room-menu>summary::-webkit-details-marker{display:none}
+.mobile-only{display:none!important}
+@media(max-width:699px){
+  :root{--radius:14px}
+  .app-main{padding:8px max(9px,env(safe-area-inset-right)) 84px max(9px,env(safe-area-inset-left))}
+  .app-header{min-height:54px;padding-top:7px;padding-bottom:7px}
+  .app-header__copy h1{font-size:17px}.app-header__copy p{margin-top:2px}
+  .panel{margin-bottom:8px;padding:11px;border-radius:13px;box-shadow:0 2px 10px rgba(15,23,42,.04)}
+  .panel h2{font-size:15px;margin-bottom:10px}
+  .form-grid{gap:8px}
+  label{font-size:11px}
+  label>input,label>select,label>textarea{margin-top:4px}
+  input,select,textarea{padding:9px 10px;border-radius:10px}
+  textarea{min-height:72px}
+  .rooms-list{gap:8px;margin-top:9px}
+
+  /* Une pièce = un accordéon. Le formulaire détaillé n'apparaît que lorsqu'on travaille dessus. */
+  details.room-card{display:block;padding:0;overflow:hidden;background:#fff}
+  .room-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;cursor:pointer;list-style:none;background:#fff}
+  .room-summary::-webkit-details-marker{display:none}
+  .room-summary__copy{display:grid;gap:2px}
+  .room-summary__name{font-size:14px;font-weight:820;line-height:1.2}
+  .room-summary__meta{font-size:10px;color:var(--muted);font-weight:650}
+  .room-summary__chevron{flex:0 0 auto;font-size:16px;color:var(--muted);transition:transform .18s ease}
+  details.room-card[open] .room-summary__chevron{transform:rotate(180deg)}
+  details.room-card.is-validated .room-summary{background:#f6fbf7}
+  .room-card__body{padding:0 10px 10px;border-top:1px solid var(--line-soft)}
+  .room-card__header{margin:9px 0 8px}
+
+  /* Trois actions secondaires deviennent un seul menu Options. */
+  .room-card__actions{width:100%;margin-top:7px}
+  .room-menu{width:100%}
+  .room-menu>summary{display:flex;align-items:center;justify-content:center;width:100%;padding:9px 11px;border-radius:10px;background:var(--accent-soft);color:var(--text);font-size:11px;font-weight:800}
+  .room-menu[open]>summary{margin-bottom:6px}
+  .room-menu__items{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:7px;background:#f8fafc;border:1px solid var(--line-soft);border-radius:10px}
+  .room-menu__items button{width:100%;min-height:38px;font-size:11px}
+  .room-menu__items .button--danger{grid-column:1/-1}
+
+  .element-card,.element-card--exit{padding:8px;gap:7px;border-radius:10px}
+  .element-card__remove{height:34px}
+  .inventory-card{padding:9px;margin-top:9px}
+  .inventory-card__head{margin-bottom:7px}.inventory-card__head h4{font-size:13px}
+  .inventory-item,.inventory-item--exit{padding:8px;gap:7px}
+  .inventory-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .inventory-actions button{width:100%;font-size:11px;padding:9px 7px}
+  .room-card__footer{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .room-card__footer>*{width:100%;font-size:11px;padding:9px 7px;text-align:center}
+  .validate-room-button{min-height:42px;margin-top:9px}
+  .photo-grid{gap:6px}.photo-card img{height:105px}
+  .inventory-photo-grid{gap:5px}.inventory-photo img{height:88px}
+
+  /* La sauvegarde est automatique : pas besoin d'un gros bouton Enregistrer en permanence sur mobile. */
+  #saveButton{display:none!important}
+  .editor-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;padding:6px max(9px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(9px,env(safe-area-inset-left))}
+  #saveStatus{grid-column:1/-1;font-size:9px;line-height:1;text-align:center}
+  .editor-actions button{min-height:40px;padding:9px 8px;font-size:11px}
+  #generatePdfButton{font-size:12px}
+  #versionButton:not(.is-hidden){grid-column:1/-1}
+
+  .signature-surface{height:155px;margin:7px 0}
+  .clear-signature-button{min-height:38px;font-size:11px}
+  .legal-note{font-size:10px;padding:8px;margin:8px 0}
+  .reference-card{padding:9px}
+  .catalog-card{padding:12px}.catalog-card__actions{gap:6px}.catalog-card__actions button{font-size:11px;padding:9px}
+  .catalog-secondary-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:9px}
+  .catalog-secondary-actions>*{width:100%!important;font-size:11px;padding:9px 7px}
+  .catalog-toolbar{gap:7px}.catalog-toolbar button{min-height:42px}
+  .modal__card{padding:14px}.modal h2{font-size:18px}
+}
+@media(max-width:390px){
+  .inventory-actions,.room-card__footer,.catalog-secondary-actions{grid-template-columns:1fr}
+  .room-menu__items{grid-template-columns:1fr}
+  .room-menu__items .button--danger{grid-column:auto}
+}
+
 </style>
 </head>
 <body>
@@ -1117,7 +1198,8 @@ const state = {
   wizardStep: 1,
   wizardType: "Entrée",
   autosaveTimer: null,
-  referencePdfUrl: null
+  referencePdfUrl: null,
+  openRoomId: null
 };
 
 let tenantSignature;
@@ -1257,7 +1339,7 @@ function createEmptyRecord() {
 
   return {
     id: uid(),
-    schemaVersion: 7,
+    schemaVersion: 8,
     version: 1,
     parentRecordId: null,
     sourceEntryRecordId: null,
@@ -1677,17 +1759,30 @@ function renderRooms() {
     return;
   }
 
-  el.roomsList.innerHTML = r.rooms.map((room) => `
-    <article class="room-card ${room.validated ? "is-validated" : ""}">
+  el.roomsList.innerHTML = r.rooms.map((room, roomIndex) => `
+    <details class="room-card ${room.validated ? "is-validated" : ""}" data-room-details="${room.id}" name="roomAccordion" ${(state.openRoomId === room.id || (!state.openRoomId && roomIndex === 0)) ? "open" : ""}>
+      <summary class="room-summary">
+        <span class="room-summary__copy">
+          <span class="room-summary__name">${escapeHtml(room.name)}</span>
+          <span class="room-summary__meta">${room.validated ? "Pièce validée" : "À vérifier"} · ${room.elements.length} élément(s)${r.property.furnished === "Oui" ? ` · ${(room.inventory || []).length} mobilier(s)` : ""}</span>
+        </span>
+        <span class="room-summary__chevron" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="room-card__body">
       <div class="room-card__header">
         <label class="room-card__title">
           Nom de la pièce
           <input data-room-id="${room.id}" data-room-field="name" value="${escapeHtml(room.name)}">
         </label>
         <div class="room-card__actions">
-          <button class="button button--secondary" type="button" data-room-conform="${room.id}">Tout est conforme</button>
-          <button class="button button--secondary" type="button" data-room-duplicate="${room.id}">Dupliquer</button>
-          <button class="button button--danger" type="button" data-room-delete="${room.id}">Supprimer</button>
+          <details class="room-menu">
+            <summary>Options de la pièce</summary>
+            <div class="room-menu__items">
+              <button class="button button--secondary" type="button" data-room-conform="${room.id}">Tout est conforme</button>
+              <button class="button button--secondary" type="button" data-room-duplicate="${room.id}">Dupliquer</button>
+              <button class="button button--danger" type="button" data-room-delete="${room.id}">Supprimer la pièce</button>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -1775,7 +1870,8 @@ function renderRooms() {
       <button class="validate-room-button ${room.validated ? "button--secondary" : ""}" type="button" data-room-validate="${room.id}">
         ${room.validated ? "✓ Pièce validée" : "Valider la pièce"}
       </button>
-    </article>
+      </div>
+    </details>
   `).join("");
 
   updateFurnishedLegalNote();
@@ -1783,6 +1879,11 @@ function renderRooms() {
 }
 
 function bindRoomEvents() {
+  $$('[data-room-details]').forEach((details) => {
+    details.addEventListener('toggle', () => {
+      if (details.open) state.openRoomId = details.dataset.roomDetails;
+    });
+  });
   const editable = () => !isCurrentRecordLocked();
 
   $$("[data-room-field]").forEach((field) => {
