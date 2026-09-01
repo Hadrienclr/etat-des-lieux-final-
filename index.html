@@ -124,6 +124,24 @@ button:active{transform:scale(.975)}
   .reference-card button{width:auto}
 }
 
+
+/* V6 — inventaire mobilier, colocation et finalisation */
+.inventory-card{margin-top:12px;padding:12px;background:#f8fafc;border:1px solid var(--line);border-radius:13px}
+.inventory-card__head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.inventory-card__head h4{margin:0;font-size:14px}.inventory-card__head span{font-size:10px;color:var(--muted)}
+.inventory-list{display:grid;gap:8px}.inventory-item{display:grid;grid-template-columns:minmax(0,1.2fr) 80px minmax(0,.9fr) minmax(0,1.2fr) auto;gap:8px;align-items:end;padding:9px;background:#fff;border:1px solid var(--line-soft);border-radius:11px}.inventory-item--exit{grid-template-columns:minmax(0,1.1fr) 70px minmax(0,.8fr) minmax(0,.8fr) minmax(0,1.1fr) auto}.inventory-item button{height:40px}.inventory-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.legal-note{margin:10px 0;padding:10px;background:#f8fafc;border:1px solid var(--line);border-radius:11px;color:var(--muted);font-size:11px;line-height:1.45}.legal-note strong{color:var(--text)}
+.signer-list{display:grid;gap:10px;margin-top:10px}.signer-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;padding:10px;background:var(--surface-soft);border:1px solid var(--line);border-radius:11px}.locked-banner{margin-bottom:12px;padding:12px;background:var(--success-soft);border:1px solid #bbf7d0;border-radius:12px;color:var(--success);font-weight:750;font-size:12px}.is-locked input,.is-locked select,.is-locked textarea{pointer-events:none;background:#f8fafc}.is-locked [data-room-delete],.is-locked [data-room-duplicate],.is-locked [data-element-delete],.is-locked [data-element-add],.is-locked [data-photo-input],.is-locked [data-photo-delete],.is-locked [data-inventory-add],.is-locked [data-inventory-delete],.is-locked [data-room-conform],.is-locked [data-room-validate],.is-locked #addRoomButton,.is-locked .clear-signature-button{display:none!important}
+@media(max-width:700px){.inventory-item,.inventory-item--exit{grid-template-columns:minmax(0,1fr)}.inventory-item button{width:100%}.signer-row{grid-template-columns:1fr}}
+
+/* V7 — sauvegarde, inventaire photo et verrouillage renforcé */
+.catalog-secondary-actions{display:flex;flex-wrap:wrap;gap:8px;margin:-2px 0 12px}.catalog-secondary-actions>*{flex:0 1 auto}.import-control{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.import-control input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.storage-warning{margin-bottom:12px;padding:11px 12px;border:1px solid #fecaca;border-radius:12px;background:#fff1f2;color:#991b1b;font-size:12px;line-height:1.45}
+.inventory-item__photos{grid-column:1/-1;padding-top:2px}.inventory-photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:7px}.inventory-photo{position:relative}.inventory-photo img{display:block;width:100%;height:96px;object-fit:cover;border:1px solid var(--line);border-radius:9px}.inventory-photo button{position:absolute;top:5px;right:5px;width:30px!important;height:30px!important;padding:0;border-radius:999px;background:rgba(15,23,42,.85)}
+.inventory-required{display:inline-flex;align-items:center;margin-left:6px;padding:2px 6px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:9px;font-weight:800;vertical-align:middle}
+.legal-checklist{display:grid;gap:5px;margin-top:9px}.legal-check{display:flex;align-items:flex-start;gap:7px;font-size:11px}.legal-check::before{content:"✓";flex:0 0 auto;font-weight:900;color:var(--success)}.legal-check.is-missing::before{content:"!";color:var(--danger)}.legal-check.is-missing{color:var(--danger)}
+.is-locked button[data-room-conform],.is-locked button[data-room-validate],.is-locked button[data-inventory-template],.is-locked .photo-control,.is-locked .import-control{pointer-events:none}
+@media(max-width:620px){.catalog-secondary-actions>*{flex:1 1 100%}.inventory-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.editor-actions button{min-height:42px}}
+.status-badge--ready{background:#eff6ff;color:#1d4ed8}
+
 </style>
 </head>
 <body>
@@ -145,10 +163,16 @@ button:active{transform:scale(.975)}
         <input id="catalogSearch" type="search" placeholder="Rechercher une adresse, un lot ou un locataire">
         <button id="newRecordButton" type="button">+ Nouvel état des lieux</button>
       </div>
+      <div class="catalog-secondary-actions">
+        <button id="exportBackupButton" class="button button--secondary" type="button">Exporter une sauvegarde</button>
+        <label class="button button--secondary import-control">Importer une sauvegarde<input id="importBackupInput" type="file" accept="application/json,.json"></label>
+      </div>
+      <div id="storageWarning" class="storage-warning is-hidden">Le stockage local de ce navigateur est indisponible. Les dossiers ne peuvent pas être enregistrés de façon fiable sur cet appareil.</div>
       <div id="catalogList" class="catalog-list"></div>
     </section>
 
     <section id="editorView" class="app-view">
+      <div id="lockedBanner" class="locked-banner is-hidden">Document finalisé : cette version est verrouillée. Utilisez « Créer une nouvelle version » pour apporter une correction.</div>
       <article class="panel">
         <h2>Informations générales</h2>
         <div class="form-grid">
@@ -172,6 +196,8 @@ button:active{transform:scale(.975)}
           <label>Locataire<input id="tenantName"></label>
           <label>Téléphone du locataire<input id="tenantPhone" inputmode="tel"></label>
           <label>Email du locataire<input id="tenantEmail" type="email"></label>
+          <label>Second locataire / colocataire<input id="tenant2Name" placeholder="Facultatif"></label>
+          <label>Email du second locataire<input id="tenant2Email" type="email" placeholder="Facultatif"></label>
         </div>
       </article>
 
@@ -195,6 +221,7 @@ button:active{transform:scale(.975)}
           <h2>Pièces</h2>
           <button id="addRoomButton" class="button button--secondary" type="button">+ Ajouter une pièce</button>
         </div>
+        <div id="furnishedLegalNote" class="legal-note is-hidden"><strong>Logement meublé :</strong> l’inventaire est intégré pièce par pièce. Le contrôle reprend la liste minimale du décret n° 2015-981 du 31 juillet 2015. La présence dans l’inventaire ne remplace pas la vérification de l’état réel des équipements.</div>
         <div id="roomsList" class="rooms-list"></div>
       </article>
 
@@ -213,6 +240,11 @@ button:active{transform:scale(.975)}
             <div class="signature-surface"><canvas id="tenantSignatureCanvas"></canvas></div>
             <button class="button button--secondary clear-signature-button" type="button" data-signature="tenant">Effacer la signature</button>
           </section>
+          <section id="tenant2SignatureCard" class="signature-card is-hidden">
+            <label>Nom du second signataire locataire<input id="tenant2SignerName"></label>
+            <div class="signature-surface"><canvas id="tenant2SignatureCanvas"></canvas></div>
+            <button class="button button--secondary clear-signature-button" type="button" data-signature="tenant2">Effacer la signature</button>
+          </section>
           <section class="signature-card">
             <label>Nom du signataire bailleur / mandataire<input id="landlordSignerName"></label>
             <div class="signature-surface"><canvas id="landlordSignatureCanvas"></canvas></div>
@@ -225,7 +257,9 @@ button:active{transform:scale(.975)}
 
   <footer id="editorActions" class="editor-actions is-hidden">
     <span id="saveStatus">Enregistré</span>
+    <button id="versionButton" class="button button--secondary is-hidden" type="button">Nouvelle version</button>
     <button id="saveButton" class="button button--secondary" type="button">Enregistrer</button>
+    <button id="finalizeButton" class="button button--secondary" type="button">Finaliser</button>
     <button id="generatePdfButton" class="button" type="button">Ouvrir le PDF</button>
   </footer>
 
@@ -295,8 +329,8 @@ button:active{transform:scale(.975)}
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js" crossorigin="anonymous"></script>
   <script>
 
 /* templates.js */
@@ -308,9 +342,124 @@ const CONDITIONS = [
   "État d’usage",
   "Passable",
   "Mauvais état",
+  "Absent / manquant",
   "À remplacer",
   "Non concerné"
 ];
+
+const LEGAL_FURNITURE_REQUIREMENTS = [
+  { id: "literie", label: "Literie comprenant couette ou couverture" },
+  { id: "occultation", label: "Dispositif d’occultation des fenêtres dans les chambres" },
+  { id: "cuisson", label: "Plaques de cuisson" },
+  { id: "four", label: "Four ou four à micro-ondes" },
+  { id: "froid", label: "Réfrigérateur et congélateur, ou compartiment ≤ -6 °C" },
+  { id: "vaisselle", label: "Vaisselle nécessaire à la prise des repas" },
+  { id: "ustensiles", label: "Ustensiles de cuisine" },
+  { id: "table_sieges", label: "Table et sièges" },
+  { id: "rangement", label: "Étagères de rangement" },
+  { id: "luminaires", label: "Luminaires" },
+  { id: "entretien", label: "Matériel d’entretien ménager adapté au logement" }
+];
+
+const FURNITURE_MINIMUM = LEGAL_FURNITURE_REQUIREMENTS.map((item) => item.label);
+
+const FURNITURE_TEMPLATES = {
+  "Entrée / dégagement": [
+    { name: "Matériel d’entretien ménager", requirementIds: ["entretien"] },
+    { name: "Luminaire", requirementIds: ["luminaires"] }
+  ],
+  "Cuisine": [
+    { name: "Plaques de cuisson", requirementIds: ["cuisson"] },
+    { name: "Four / micro-ondes", requirementIds: ["four"] },
+    { name: "Réfrigérateur / congélateur", requirementIds: ["froid"] },
+    { name: "Vaisselle", requirementIds: ["vaisselle"] },
+    { name: "Ustensiles de cuisine", requirementIds: ["ustensiles"] },
+    { name: "Table", requirementIds: ["table_sieges"] },
+    { name: "Chaises / sièges", quantity: 2, requirementIds: ["table_sieges"] },
+    { name: "Étagères / rangements", requirementIds: ["rangement"] },
+    { name: "Luminaire", requirementIds: ["luminaires"] }
+  ],
+  "Séjour / pièce principale": [
+    { name: "Table", requirementIds: ["table_sieges"] },
+    { name: "Chaises / sièges", quantity: 2, requirementIds: ["table_sieges"] },
+    { name: "Canapé" },
+    { name: "Meuble / étagères de rangement", requirementIds: ["rangement"] },
+    { name: "Luminaire", requirementIds: ["luminaires"] }
+  ],
+  "Chambre": [
+    { name: "Lit / sommier", requirementIds: ["literie"] },
+    { name: "Matelas", requirementIds: ["literie"] },
+    { name: "Couette / couverture", requirementIds: ["literie"] },
+    { name: "Oreillers", quantity: 2 },
+    { name: "Rideaux / volets occultants", requirementIds: ["occultation"] },
+    { name: "Étagères / rangement", requirementIds: ["rangement"] },
+    { name: "Luminaire", requirementIds: ["luminaires"] }
+  ],
+  "Studio": [
+    { name: "Lit / couchage", requirementIds: ["literie"] },
+    { name: "Couette / couverture", requirementIds: ["literie"] },
+    { name: "Rideaux / volets occultants", requirementIds: ["occultation"] },
+    { name: "Table", requirementIds: ["table_sieges"] },
+    { name: "Chaises / sièges", quantity: 2, requirementIds: ["table_sieges"] },
+    { name: "Étagères / rangement", requirementIds: ["rangement"] },
+    { name: "Luminaire", requirementIds: ["luminaires"] }
+  ],
+  "Buanderie": [
+    { name: "Matériel d’entretien ménager", requirementIds: ["entretien"] },
+    { name: "Étagères / rangement", requirementIds: ["rangement"] },
+    { name: "Luminaire", requirementIds: ["luminaires"] }
+  ],
+  "Autre": []
+};
+
+function furnitureForRoom(roomName, propertyNature = "") {
+  const base = String(roomName || "").replace(/ \d+$/, "");
+  const template = (propertyNature === "Studio" && base === "Séjour / pièce principale")
+    ? FURNITURE_TEMPLATES.Studio
+    : (FURNITURE_TEMPLATES[base] || (base.includes("Chambre") ? FURNITURE_TEMPLATES.Chambre : []));
+  return template.map((definition) => createInventoryItem(definition));
+}
+
+function normalizeSearchText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function evaluateFurnitureMinimum(record) {
+  if (record?.property?.furnished !== "Oui") return [];
+
+  const presentItems = (record.rooms || [])
+    .flatMap((room) => room.inventory || [])
+    .filter((item) => {
+      const condition = record.type === "Sortie" ? item.exitCondition : item.entryCondition;
+      return Number(item.quantity ?? 1) > 0 && condition !== "Absent / manquant" && condition !== "Non concerné";
+    });
+
+  const names = presentItems.map((item) => normalizeSearchText(item.name));
+  const has = (pattern) => names.some((name) => pattern.test(name));
+  const tagged = (id) => presentItems.some((item) => (item.requirementIds || []).includes(id));
+
+  const tests = {
+    literie: () => has(/lit|literie|sommier|matelas|couchage/) && has(/couette|couverture/),
+    occultation: () => tagged("occultation") || has(/occult|rideau|volet|store/),
+    cuisson: () => tagged("cuisson") || has(/plaque|cuisson/),
+    four: () => tagged("four") || has(/four|micro[- ]?onde/),
+    froid: () => tagged("froid") || ((has(/refriger|frigo/) && has(/congel|compartiment/))),
+    vaisselle: () => tagged("vaisselle") || has(/vaisselle/),
+    ustensiles: () => tagged("ustensiles") || has(/ustensile/),
+    table_sieges: () => has(/\btable\b/) && has(/siege|chaise|tabouret/),
+    rangement: () => tagged("rangement") || has(/etagere|rangement|placard|armoire/),
+    luminaires: () => tagged("luminaires") || has(/luminaire|lampe|eclairage/),
+    entretien: () => tagged("entretien") || has(/entretien|menage|aspirateur|balai|serpill/)
+  };
+
+  return LEGAL_FURNITURE_REQUIREMENTS.map((requirement) => ({
+    ...requirement,
+    present: Boolean(tests[requirement.id]?.())
+  }));
+}
 
 const ROOM_TEMPLATES = {
   "Entrée / dégagement": ["Porte d’entrée","Serrure / poignée","Sonnette / interphone","Murs","Sol","Plafond","Éclairage / interrupteurs","Prises électriques"],
@@ -328,7 +477,6 @@ const ROOM_TEMPLATES = {
   "Parking / garage": ["Accès","Porte / portail","Télécommande","Sol","Murs","Plafond","Éclairage","Prise électrique"],
   "Autre": ["Murs","Sol","Plafond","Éclairage","Prises électriques"]
 };
-
 
 /* db.js */
 const DATABASE_NAME = "etat_des_lieux_v4";
@@ -389,6 +537,38 @@ async function removeRecord(id) {
   });
 }
 
+async function saveRecords(records) {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(RECORDS_STORE, "readwrite");
+    const store = transaction.objectStore(RECORDS_STORE);
+    records.forEach((record) => store.put(record));
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function clearRecords() {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(RECORDS_STORE, "readwrite");
+    transaction.objectStore(RECORDS_STORE).clear();
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function verifyStorageAvailable() {
+  const testRecord = { id: "__storage_test__", createdAt: new Date().toISOString() };
+  try {
+    await saveRecord(testRecord);
+    await removeRecord(testRecord.id);
+    return true;
+  } catch (error) {
+    console.error("IndexedDB indisponible", error);
+    return false;
+  }
+}
 
 /* signature.js */
 class SignatureCanvas {
@@ -535,7 +715,6 @@ class SignatureCanvas {
   }
 }
 
-
 /* pdf.js */
 const PAGE_WIDTH = 210;
 const PAGE_HEIGHT = 297;
@@ -550,51 +729,78 @@ function formatDate(value) {
   return date.toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
 }
 
+function safeFileName(value) {
+  return String(value || "logement")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9-_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80) || "logement";
+}
+
 function conditionColor(condition) {
   const value = String(condition || "").toLowerCase();
   if (value.includes("bon") || value.includes("neuf")) return [221, 238, 221];
   if (value.includes("usage") || value.includes("passable")) return [255, 241, 191];
-  if (value.includes("mauvais") || value.includes("remplacer")) return [246, 209, 209];
+  if (value.includes("mauvais") || value.includes("remplacer") || value.includes("absent") || value.includes("manquant")) return [246, 209, 209];
   return [242, 243, 244];
 }
 
 function getPreflightIssues(record) {
   const issues = [];
 
-  if (!record.property.address) issues.push("Adresse du logement non renseignée.");
-  if (!record.parties.landlord) issues.push("Bailleur ou mandataire non renseigné.");
-  if (!record.parties.tenant) issues.push("Locataire non renseigné.");
+  if (!record?.property?.address) issues.push("Adresse du logement non renseignée.");
+  if (!record?.date) issues.push("Date de l’état des lieux non renseignée.");
+  if (!record?.parties?.landlord) issues.push("Bailleur ou mandataire non renseigné.");
+  if (!record?.parties?.tenant) issues.push("Locataire non renseigné.");
+  if (!(record?.rooms || []).length) issues.push("Aucune pièce n’est renseignée.");
 
-  const unvalidatedRooms = record.rooms.filter((room) => !room.validated);
-  if (unvalidatedRooms.length) {
-    issues.push(`${unvalidatedRooms.length} pièce(s) ne sont pas validées.`);
-  }
+  const unvalidatedRooms = (record.rooms || []).filter((room) => !room.validated);
+  if (unvalidatedRooms.length) issues.push(`${unvalidatedRooms.length} pièce(s) ne sont pas validées.`);
 
-  if (!record.signatures.tenantName || !record.signatures.tenantData) {
+  if (!record?.signatures?.tenantName || !record?.signatures?.tenantData) {
     issues.push("Signature du locataire incomplète.");
   }
 
-  if (!record.signatures.landlordName || !record.signatures.landlordData) {
+  if (record?.parties?.tenant2 && (!record?.signatures?.tenant2Name || !record?.signatures?.tenant2Data)) {
+    issues.push("Signature du second locataire / colocataire incomplète.");
+  }
+
+  if (!record?.signatures?.landlordName || !record?.signatures?.landlordData) {
     issues.push("Signature du bailleur ou mandataire incomplète.");
+  }
+
+  if (record?.property?.furnished === "Oui") {
+    const checks = evaluateFurnitureMinimum(record);
+    const missing = checks.filter((item) => !item.present);
+    if (missing.length) {
+      issues.push(`${missing.length} catégorie(s) de mobilier minimal ne sont pas identifiées dans l’inventaire.`);
+    }
   }
 
   return issues;
 }
 
 async function generatePdf(record) {
-  if (!window.jspdf?.jsPDF) {
-    throw new Error("La bibliothèque PDF ne s’est pas chargée.");
+  if (!window.jspdf?.jsPDF) throw new Error("La bibliothèque PDF ne s’est pas chargée. Vérifiez la connexion internet puis réessayez.");
+  if (typeof window.jspdf.jsPDF.API.autoTable !== "function" && typeof window.jspdf.jsPDF.autoTable !== "function") {
+    // Le plugin ajoute généralement doc.autoTable. Le contrôle réel est effectué après création.
   }
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
+  if (typeof doc.autoTable !== "function") throw new Error("Le module de tableaux PDF ne s’est pas chargé.");
 
   const C = {
     dark: [47, 52, 55],
     light: [242, 243, 244],
     line: [205, 209, 212],
     muted: [100, 116, 139],
-    white: [255, 255, 255]
+    white: [255, 255, 255],
+    good: [221, 238, 221],
+    warn: [255, 241, 191],
+    bad: [246, 209, 209]
   };
 
   let y = CONTENT_TOP;
@@ -603,17 +809,13 @@ async function generatePdf(record) {
     doc.setTextColor(...C.dark);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-
-    const title = record.type === "Sortie"
-      ? "ÉTAT DES LIEUX DE SORTIE"
-      : "ÉTAT DES LIEUX D’ENTRÉE";
-
-    doc.text(title, MARGIN, 11);
+    doc.text(record.type === "Sortie" ? "ÉTAT DES LIEUX DE SORTIE" : "ÉTAT DES LIEUX D’ENTRÉE", MARGIN, 11);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(...C.muted);
-    doc.text(`Référence : ${record.property.lot || record.id}`, PAGE_WIDTH - MARGIN, 8, { align: "right" });
+    const reference = record.property?.lot || String(record.id || "").slice(0, 12) || "—";
+    doc.text(`Référence : ${reference} · Version ${record.version || 1}`, PAGE_WIDTH - MARGIN, 8, { align: "right" });
     doc.text(`Date : ${formatDate(record.date)}`, PAGE_WIDTH - MARGIN, 13, { align: "right" });
 
     doc.setDrawColor(...C.dark);
@@ -625,15 +827,13 @@ async function generatePdf(record) {
     doc.setDrawColor(...C.line);
     doc.setLineWidth(0.2);
     doc.line(MARGIN, 282, PAGE_WIDTH - MARGIN, 282);
-
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.5);
     doc.setTextColor(...C.muted);
     doc.text("État des lieux · Document établi contradictoirement entre les parties", MARGIN, 287);
     doc.text(`Page ${pageNumber} / ${totalPages}`, PAGE_WIDTH - MARGIN, 287, { align: "right" });
-
     doc.setFontSize(5.5);
-    doc.text("Les annexes photographiques font partie intégrante du présent document.", MARGIN, 291);
+    doc.text("Les inventaires, observations, photographies et signatures font partie intégrante du présent document.", MARGIN, 291);
   }
 
   function newPage() {
@@ -646,7 +846,7 @@ async function generatePdf(record) {
     if (y + height > CONTENT_BOTTOM) newPage();
   }
 
-  function title(text) {
+  function sectionTitle(text) {
     ensure(11);
     doc.setFillColor(...C.dark);
     doc.roundedRect(MARGIN, y, PAGE_WIDTH - (MARGIN * 2), 8, 1.5, 1.5, "F");
@@ -657,56 +857,89 @@ async function generatePdf(record) {
     y += 11;
   }
 
+  function smallTitle(text) {
+    ensure(8);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(...C.dark);
+    doc.text(text, MARGIN, y + 3.2);
+    y += 6;
+  }
+
+  function addPhotoGallery(label, photos) {
+    const list = (photos || []).filter((photo) => photo?.data);
+    if (!list.length) return;
+    smallTitle(label);
+    const gap = 4;
+    const width = (PAGE_WIDTH - (MARGIN * 2) - gap) / 2;
+    const height = 42;
+    for (let index = 0; index < list.length; index += 1) {
+      if (index % 2 === 0) ensure(height + 8);
+      const column = index % 2;
+      const x = MARGIN + (column * (width + gap));
+      try {
+        doc.addImage(list[index].data, "JPEG", x, y, width, height, undefined, "FAST");
+      } catch {
+        doc.setFillColor(...C.light);
+        doc.rect(x, y, width, height, "F");
+      }
+      if (column === 1 || index === list.length - 1) y += height + 8;
+    }
+  }
+
   header();
 
-  title("INFORMATIONS GÉNÉRALES");
+  sectionTitle("INFORMATIONS GÉNÉRALES");
+  const generalRows = [
+    ["Adresse", record.property?.address || "—"],
+    ["Lot / référence", record.property?.lot || "—"],
+    ["Nature", record.property?.nature || "—"],
+    ["Logement meublé", record.property?.furnished || "—"],
+    ["Bailleur / mandataire", record.parties?.landlord || "—"],
+    ["Locataire", record.parties?.tenant || "—"],
+    ["Téléphone", record.parties?.phone || "—"],
+    ["Email", record.parties?.email || "—"]
+  ];
+  if (record.parties?.tenant2) generalRows.push(["Second locataire / colocataire", record.parties.tenant2]);
+  if (record.parties?.tenant2Email) generalRows.push(["Email second locataire", record.parties.tenant2Email]);
+  if (record.finalizedAt) generalRows.push(["Document finalisé", formatDate(record.finalizedAt)]);
+
   doc.autoTable({
     startY: y,
     margin: { left: MARGIN, right: MARGIN, top: CONTENT_TOP },
     theme: "grid",
     head: [["Champ", "Valeur"]],
-    body: [
-      ["Adresse", record.property.address || "—"],
-      ["Lot / référence", record.property.lot || "—"],
-      ["Nature", record.property.nature || "—"],
-      ["Meublé", record.property.furnished || "—"],
-      ["Bailleur / mandataire", record.parties.landlord || "—"],
-      ["Locataire", record.parties.tenant || "—"],
-      ["Téléphone", record.parties.phone || "—"],
-      ["Email", record.parties.email || "—"]
-    ],
+    body: generalRows,
     styles: { font: "helvetica", fontSize: 8, cellPadding: 3, lineColor: C.line, lineWidth: 0.2 },
     headStyles: { fillColor: C.dark, textColor: C.white }
   });
-
   y = doc.lastAutoTable.finalY + 7;
 
-  title(record.type === "Sortie" ? "COMPTEURS ET ACCÈS RESTITUÉS" : "COMPTEURS ET ACCÈS");
+  sectionTitle(record.type === "Sortie" ? "COMPTEURS ET ACCÈS RESTITUÉS" : "COMPTEURS ET ACCÈS");
   doc.autoTable({
     startY: y,
     margin: { left: MARGIN, right: MARGIN, top: CONTENT_TOP },
     theme: "grid",
     head: [["Élément", "Valeur"]],
     body: [
-      ["Électricité HP", record.meters.electricityHp || "—"],
-      ["Électricité HC", record.meters.electricityHc || "—"],
-      ["Gaz", record.meters.gas || "—"],
-      ["Eau froide", record.meters.coldWater || "—"],
-      ["Eau chaude", record.meters.hotWater || "—"],
-      ["Clés porte", record.access.doorKeys || "0"],
-      ["Badge / Vigik", record.access.badges || "0"],
-      ["Bip parking", record.access.parkingRemotes || "0"]
+      ["Électricité HP", record.meters?.electricityHp || "—"],
+      ["Électricité HC", record.meters?.electricityHc || "—"],
+      ["Gaz", record.meters?.gas || "—"],
+      ["Eau froide", record.meters?.coldWater || "—"],
+      ["Eau chaude", record.meters?.hotWater || "—"],
+      ["Clés porte", record.access?.doorKeys || "0"],
+      ["Badge / Vigik", record.access?.badges || "0"],
+      ["Bip parking", record.access?.parkingRemotes || "0"]
     ],
     styles: { font: "helvetica", fontSize: 8, cellPadding: 3, lineColor: C.line, lineWidth: 0.2 },
     headStyles: { fillColor: C.dark, textColor: C.white }
   });
-
   y = doc.lastAutoTable.finalY + 7;
 
-  for (const [roomIndex, room] of record.rooms.entries()) {
-    title(`${roomIndex + 1}. ${room.name}`);
-
+  for (const [roomIndex, room] of (record.rooms || []).entries()) {
+    sectionTitle(`${roomIndex + 1}. ${room.name}`);
     const isExit = record.type === "Sortie";
+
     doc.autoTable({
       startY: y,
       margin: { left: MARGIN, right: MARGIN, top: CONTENT_TOP },
@@ -716,19 +949,10 @@ async function generatePdf(record) {
       head: isExit
         ? [["Élément", "Description", "État d’entrée", "État de sortie"]]
         : [["Élément", "Description", "État"]],
-      body: room.elements.map((element) => (
-        isExit
-          ? [element.name, element.description || "—", element.entryCondition, element.exitCondition]
-          : [element.name, element.description || "—", element.entryCondition]
-      )),
-      styles: {
-        font: "helvetica",
-        fontSize: 7.2,
-        cellPadding: 2.4,
-        lineColor: C.line,
-        lineWidth: 0.2,
-        valign: "middle"
-      },
+      body: (room.elements || []).map((element) => isExit
+        ? [element.name, element.description || "—", element.entryCondition, element.exitCondition]
+        : [element.name, element.description || "—", element.entryCondition]),
+      styles: { font: "helvetica", fontSize: 7.2, cellPadding: 2.4, lineColor: C.line, lineWidth: 0.2, valign: "middle" },
       headStyles: { fillColor: C.light, textColor: C.dark },
       didParseCell(data) {
         if (data.section !== "body") return;
@@ -739,14 +963,45 @@ async function generatePdf(record) {
         }
       }
     });
-
     y = doc.lastAutoTable.finalY + 5;
+
+    if (record.property?.furnished === "Oui" && (room.inventory || []).length) {
+      smallTitle("Inventaire du mobilier");
+      doc.autoTable({
+        startY: y,
+        margin: { left: MARGIN, right: MARGIN, top: CONTENT_TOP },
+        theme: "grid",
+        showHead: "everyPage",
+        rowPageBreak: "avoid",
+        head: isExit
+          ? [["Mobilier / équipement", "Qté", "Entrée", "Sortie", "Observations"]]
+          : [["Mobilier / équipement", "Qté", "État", "Observations"]],
+        body: room.inventory.map((item) => isExit
+          ? [item.name, String(item.quantity ?? 1), item.entryCondition, item.exitCondition, item.notes || "—"]
+          : [item.name, String(item.quantity ?? 1), item.entryCondition, item.notes || "—"]),
+        styles: { font: "helvetica", fontSize: 7, cellPadding: 2.2, lineColor: C.line, lineWidth: 0.2 },
+        headStyles: { fillColor: C.light, textColor: C.dark },
+        didParseCell(data) {
+          if (data.section !== "body") return;
+          const columns = isExit ? [2, 3] : [2];
+          if (columns.includes(data.column.index)) {
+            data.cell.styles.fillColor = conditionColor(data.cell.raw);
+            data.cell.styles.fontStyle = "bold";
+          }
+        }
+      });
+      y = doc.lastAutoTable.finalY + 5;
+
+      for (const item of room.inventory) {
+        if (isExit) addPhotoGallery(`${item.name} — photos d’entrée`, item.entryPhotos || []);
+        addPhotoGallery(`${item.name} — ${isExit ? "photos de sortie" : "photographies"}`, item.photos || []);
+      }
+    }
 
     if (room.observation) {
       const lines = doc.splitTextToSize(room.observation, PAGE_WIDTH - (MARGIN * 2) - 10);
       const height = Math.max(12, (lines.length * 4) + 8);
       ensure(height);
-
       doc.setFillColor(...C.light);
       doc.roundedRect(MARGIN, y, PAGE_WIDTH - (MARGIN * 2), height, 1.5, 1.5, "F");
       doc.setFont("helvetica", "normal");
@@ -756,40 +1011,39 @@ async function generatePdf(record) {
       y += height + 5;
     }
 
-    const photos = room.photos.slice(0, 4);
-    if (photos.length) {
-      const gap = 4;
-      const width = (PAGE_WIDTH - (MARGIN * 2) - gap) / 2;
-      const height = 42;
-
-      for (let index = 0; index < photos.length; index += 1) {
-        if (index % 2 === 0) ensure(height + 8);
-
-        const column = index % 2;
-        const x = MARGIN + (column * (width + gap));
-
-        try {
-          doc.addImage(photos[index].data, "JPEG", x, y, width, height, undefined, "FAST");
-        } catch {
-          doc.setFillColor(...C.light);
-          doc.rect(x, y, width, height, "F");
-        }
-
-        if (column === 1 || index === photos.length - 1) y += height + 8;
-      }
-    }
+    if (isExit) addPhotoGallery(`${room.name} — photos d’entrée`, room.entryPhotos || []);
+    addPhotoGallery(`${room.name} — ${isExit ? "photos de sortie" : "photographies"}`, room.photos || []);
   }
 
-  title("OBSERVATIONS ET RÉSERVES");
+  if (record.property?.furnished === "Oui") {
+    sectionTitle("INVENTAIRE — CONTRÔLE DU MOBILIER MINIMAL");
+    const checks = evaluateFurnitureMinimum(record);
+    doc.autoTable({
+      startY: y,
+      margin: { left: MARGIN, right: MARGIN, top: CONTENT_TOP },
+      theme: "grid",
+      head: [["Équipement minimal — décret n° 2015-981", "Contrôle"]],
+      body: checks.map((item) => [item.label, item.present ? "Identifié" : "Non identifié"]),
+      styles: { font: "helvetica", fontSize: 7, cellPadding: 2.2, lineColor: C.line, lineWidth: 0.2 },
+      headStyles: { fillColor: C.light, textColor: C.dark },
+      didParseCell(data) {
+        if (data.section === "body" && data.column.index === 1) {
+          data.cell.styles.fillColor = data.cell.raw === "Identifié" ? C.good : C.bad;
+          data.cell.styles.fontStyle = "bold";
+        }
+      }
+    });
+    y = doc.lastAutoTable.finalY + 7;
+  }
+
+  sectionTitle("OBSERVATIONS ET RÉSERVES");
   const generalText = [
     record.observations || "Aucune observation générale.",
     record.reservations || ""
   ].filter(Boolean).join("\n\n");
-
   const generalLines = doc.splitTextToSize(generalText, PAGE_WIDTH - (MARGIN * 2) - 10);
   const generalHeight = Math.max(24, (generalLines.length * 4) + 10);
   ensure(generalHeight);
-
   doc.setFillColor(...C.light);
   doc.roundedRect(MARGIN, y, PAGE_WIDTH - (MARGIN * 2), generalHeight, 2, 2, "F");
   doc.setFont("helvetica", "normal");
@@ -798,31 +1052,40 @@ async function generatePdf(record) {
   doc.text(generalLines, MARGIN + 5, y + 6);
   y += generalHeight + 7;
 
-  if (y + 62 > CONTENT_BOTTOM) newPage();
+  sectionTitle("SIGNATURES");
+  const signers = [
+    { role: "Locataire", name: record.signatures?.tenantName || record.parties?.tenant || "—", data: record.signatures?.tenantData },
+    ...(record.parties?.tenant2 ? [{ role: "Second locataire / colocataire", name: record.signatures?.tenant2Name || record.parties.tenant2, data: record.signatures?.tenant2Data }] : []),
+    { role: "Bailleur / mandataire", name: record.signatures?.landlordName || record.parties?.landlord || "—", data: record.signatures?.landlordData }
+  ];
 
-  title("SIGNATURES");
-
-  const boxWidth = (PAGE_WIDTH - (MARGIN * 2) - 6) / 2;
+  const gap = 6;
+  const boxWidth = (PAGE_WIDTH - (MARGIN * 2) - gap) / 2;
   const boxHeight = 48;
+  for (let index = 0; index < signers.length; index += 1) {
+    if (index % 2 === 0) ensure(boxHeight + 7);
+    const column = index % 2;
+    const x = MARGIN + column * (boxWidth + gap);
+    doc.setDrawColor(...C.line);
+    doc.rect(x, y, boxWidth, boxHeight);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.dark);
+    const label = doc.splitTextToSize(`${signers[index].role} : ${signers[index].name}`, boxWidth - 8);
+    doc.text(label, x + 4, y + 6);
+    try {
+      if (signers[index].data) doc.addImage(signers[index].data, "PNG", x + 6, y + 13, boxWidth - 12, 28);
+    } catch {}
+    if (column === 1 || index === signers.length - 1) y += boxHeight + 7;
+  }
 
-  doc.setDrawColor(...C.line);
-  doc.rect(MARGIN, y, boxWidth, boxHeight);
-  doc.rect(MARGIN + boxWidth + 6, y, boxWidth, boxHeight);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(...C.dark);
-  doc.text(`Locataire : ${record.signatures.tenantName || record.parties.tenant || "—"}`, MARGIN + 4, y + 6);
-  doc.text(`Bailleur / mandataire : ${record.signatures.landlordName || record.parties.landlord || "—"}`, MARGIN + boxWidth + 10, y + 6);
-
-  try {
-    if (record.signatures.tenantData) {
-      doc.addImage(record.signatures.tenantData, "PNG", MARGIN + 6, y + 10, boxWidth - 12, 30);
-    }
-    if (record.signatures.landlordData) {
-      doc.addImage(record.signatures.landlordData, "PNG", MARGIN + boxWidth + 12, y + 10, boxWidth - 12, 30);
-    }
-  } catch {}
+  if (record.finalizedAt) {
+    ensure(10);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...C.muted);
+    doc.text(`Version ${record.version || 1} finalisée le ${formatDate(record.finalizedAt)}.`, MARGIN, y);
+  }
 
   const totalPages = doc.getNumberOfPages();
   for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
@@ -834,25 +1097,18 @@ async function generatePdf(record) {
   const blob = doc.output("blob");
   const url = URL.createObjectURL(blob);
   const opened = window.open(url, "_blank");
-
   if (!opened) {
     const link = document.createElement("a");
     link.href = url;
-    link.download = `etat-des-lieux-${record.type.toLowerCase()}-${record.property.address || "logement"}.pdf`;
+    link.download = `etat-des-lieux-${String(record.type || "entree").toLowerCase()}-${safeFileName(record.property?.address)}.pdf`;
     document.body.appendChild(link);
     link.click();
     link.remove();
   }
-
   window.setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
-
 /* app.js */
-
-
-
-
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 
@@ -865,6 +1121,7 @@ const state = {
 };
 
 let tenantSignature;
+let tenant2Signature;
 let landlordSignature;
 
 const ids = [
@@ -881,9 +1138,9 @@ const ids = [
   "landlordName","tenantName","tenantPhone","tenantEmail","electricityHp",
   "electricityHc","gasIndex","coldWaterIndex","hotWaterIndex","doorKeys",
   "badges","parkingRemotes","metersNotApplicable","generalObservations",
-  "generalReservations","noGeneralObservation","tenantSignerName",
-  "landlordSignerName","wizardAddress","wizardLot","wizardNature",
-  "wizardFurnished","wizardMainRoomCount"
+  "generalReservations","noGeneralObservation","tenantSignerName","tenant2SignerName","tenant2SignatureCard",
+  "landlordSignerName","tenant2Name","tenant2Email","lockedBanner","furnishedLegalNote","versionButton","finalizeButton","wizardAddress","wizardLot","wizardNature",
+  "wizardFurnished","wizardMainRoomCount","exportBackupButton","importBackupInput","storageWarning"
 ];
 
 const el = {};
@@ -929,6 +1186,60 @@ function createElement(name) {
   };
 }
 
+function createInventoryItem(definition = "Nouvel élément mobilier") {
+  const source = typeof definition === "string" ? { name: definition } : (definition || {});
+  return {
+    id: uid(),
+    name: source.name || "Nouvel élément mobilier",
+    quantity: Number(source.quantity ?? 1),
+    entryCondition: "Non vérifié",
+    exitCondition: "Non vérifié",
+    notes: "",
+    photos: [],
+    entryPhotos: [],
+    requirementIds: Array.isArray(source.requirementIds) ? [...source.requirementIds] : []
+  };
+}
+
+function ensureRecordV7(record) {
+  record.schemaVersion = 7;
+  record.finalizedAt = record.finalizedAt || null;
+  record.version = Number(record.version || 1);
+  record.parentRecordId = record.parentRecordId || null;
+  record.sourceEntryRecordId = record.sourceEntryRecordId || null;
+  record.property = record.property || { address: "", lot: "", nature: "Appartement", furnished: "Non" };
+  record.parties = record.parties || {};
+  record.parties.tenant2 = record.parties.tenant2 || "";
+  record.parties.tenant2Email = record.parties.tenant2Email || "";
+  record.signatures = record.signatures || {};
+  record.signatures.tenantName = record.signatures.tenantName || "";
+  record.signatures.tenantData = record.signatures.tenantData || "";
+  record.signatures.tenant2Name = record.signatures.tenant2Name || "";
+  record.signatures.tenant2Data = record.signatures.tenant2Data || "";
+  record.signatures.landlordName = record.signatures.landlordName || "";
+  record.signatures.landlordData = record.signatures.landlordData || "";
+  record.rooms = Array.isArray(record.rooms) ? record.rooms : [];
+  record.rooms.forEach((room) => {
+    room.elements = Array.isArray(room.elements) ? room.elements : [];
+    room.photos = Array.isArray(room.photos) ? room.photos : [];
+    room.inventory = Array.isArray(room.inventory) ? room.inventory : [];
+    room.inventory.forEach((item) => {
+      item.photos = Array.isArray(item.photos) ? item.photos : [];
+      item.entryPhotos = Array.isArray(item.entryPhotos) ? item.entryPhotos : [];
+      item.requirementIds = Array.isArray(item.requirementIds) ? item.requirementIds : [];
+      item.quantity = Number(item.quantity ?? 1);
+      item.entryCondition = item.entryCondition || "Non vérifié";
+      item.exitCondition = item.exitCondition || "Non vérifié";
+      item.notes = item.notes || "";
+    });
+  });
+  return record;
+}
+
+function isCurrentRecordLocked() {
+  return Boolean(state.currentRecord?.finalizedAt);
+}
+
 function createRoom(templateName, roomName = templateName) {
   return {
     id: uid(),
@@ -936,7 +1247,8 @@ function createRoom(templateName, roomName = templateName) {
     observation: "",
     validated: false,
     elements: ROOM_TEMPLATES[templateName].map(createElement),
-    photos: []
+    photos: [],
+    inventory: []
   };
 }
 
@@ -945,6 +1257,11 @@ function createEmptyRecord() {
 
   return {
     id: uid(),
+    schemaVersion: 7,
+    version: 1,
+    parentRecordId: null,
+    sourceEntryRecordId: null,
+    finalizedAt: null,
     type: "Entrée",
     date: localDateTime(),
     status: "Brouillon",
@@ -960,7 +1277,9 @@ function createEmptyRecord() {
       landlord: "",
       tenant: "",
       phone: "",
-      email: ""
+      email: "",
+      tenant2: "",
+      tenant2Email: ""
     },
     meters: {
       electricityHp: "",
@@ -981,8 +1300,10 @@ function createEmptyRecord() {
     noObservation: false,
     signatures: {
       tenantName: "",
-      landlordName: "",
       tenantData: "",
+      tenant2Name: "",
+      tenant2Data: "",
+      landlordName: "",
       landlordData: ""
     },
     referencePdf: null
@@ -1016,7 +1337,7 @@ function showEditor() {
   el.backButton.classList.remove("is-hidden");
   el.headerProgress.classList.remove("is-hidden");
   updateHeader();
-  updateProgress();
+  updateProgress({ collect: false });
 }
 
 function updateHeader() {
@@ -1027,8 +1348,29 @@ function updateHeader() {
   ].join(" · ");
 }
 
+function updateFurnishedLegalNote() {
+  const record = state.currentRecord;
+  if (!record || record.property.furnished !== "Oui") {
+    el.furnishedLegalNote.classList.add("is-hidden");
+    return;
+  }
+
+  const checks = evaluateFurnitureMinimum(record);
+  const missing = checks.filter((item) => !item.present);
+  el.furnishedLegalNote.classList.remove("is-hidden");
+  el.furnishedLegalNote.innerHTML = `
+    <strong>Logement meublé :</strong> inventaire intégré pièce par pièce.
+    Contrôle indicatif de la liste minimale du décret n° 2015-981 du 31 juillet 2015.
+    <div class="legal-checklist">
+      ${checks.map((item) => `<div class="legal-check ${item.present ? "" : "is-missing"}">${escapeHtml(item.label)}</div>`).join("")}
+    </div>
+    ${missing.length ? `<div style="margin-top:8px"><strong>${missing.length} élément(s) minimal(aux) non identifié(s).</strong> Vérifiez l’inventaire avant finalisation.</div>` : `<div style="margin-top:8px"><strong>Les 11 catégories minimales sont identifiées dans l’inventaire.</strong></div>`}
+  `;
+}
+
 function statusClass(status) {
   if (status === "Terminé") return "status-badge status-badge--done";
+  if (status === "Prêt à finaliser") return "status-badge status-badge--ready";
   if (status === "À signer") return "status-badge status-badge--sign";
   return "status-badge";
 }
@@ -1036,11 +1378,13 @@ function statusClass(status) {
 async function renderCatalog() {
   const search = el.catalogSearch.value.trim().toLowerCase();
   const records = (await readAllRecords())
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .map((record) => ensureRecordV7(record))
+    .sort((a, b) => String(b.updatedAt || b.createdAt || "").localeCompare(String(a.updatedAt || a.createdAt || "")))
     .filter((record) => [
       record.property.address,
       record.property.lot,
       record.parties.tenant,
+      record.parties.tenant2,
       record.type
     ].join(" ").toLowerCase().includes(search));
 
@@ -1054,7 +1398,7 @@ async function renderCatalog() {
 
   el.catalogList.innerHTML = records.map((record) => `
     <article class="catalog-card">
-      <span class="${statusClass(record.status)}">${escapeHtml(record.status)}</span>
+      <span class="${statusClass(record.status)}">${escapeHtml(calculateStatus(record))}</span>
       <h3>${escapeHtml(record.property.address || "Adresse non renseignée")}</h3>
       <div class="catalog-card__meta">
         ${escapeHtml(record.property.lot || "Sans lot")} · ${escapeHtml(record.type)}<br>
@@ -1088,14 +1432,15 @@ async function openRecord(recordId) {
     alert("Ce dossier est introuvable.");
     return;
   }
-  state.currentRecord = record;
+  state.currentRecord = ensureRecordV7(record);
   hydrateEditor();
   showEditor();
 }
 
 async function duplicateRecordAsExit(recordId) {
-  const source = await readRecord(recordId);
-  if (!source) return;
+  const sourceRecord = await readRecord(recordId);
+  if (!sourceRecord) return;
+  const source = ensureRecordV7(sourceRecord);
 
   const copy = structuredClone(source);
   const now = new Date().toISOString();
@@ -1106,12 +1451,18 @@ async function duplicateRecordAsExit(recordId) {
   copy.date = localDateTime();
   copy.createdAt = now;
   copy.updatedAt = now;
-  copy.signatures = { tenantName: "", landlordName: "", tenantData: "", landlordData: "" };
+  copy.finalizedAt = null;
+  copy.version = 1;
+  copy.parentRecordId = null;
+  copy.sourceEntryRecordId = source.id;
+  copy.signatures = { tenantName: "", tenantData: "", tenant2Name: "", tenant2Data: "", landlordName: "", landlordData: "" };
   copy.rooms = copy.rooms.map((room) => ({
     ...room,
     id: uid(),
     validated: false,
+    entryPhotos: structuredClone(room.photos || []),
     photos: [],
+    inventory: (room.inventory || []).map(item => ({ ...item, id: uid(), exitCondition: "Non vérifié", entryPhotos: structuredClone(item.photos || item.entryPhotos || []), photos: [] })),
     elements: room.elements.map((element) => ({
       ...element,
       id: uid(),
@@ -1119,6 +1470,7 @@ async function duplicateRecordAsExit(recordId) {
     }))
   }));
 
+  ensureRecordV7(copy);
   await saveRecord(copy);
   renderCatalog();
 }
@@ -1143,6 +1495,8 @@ function hydrateEditor() {
   el.tenantName.value = r.parties.tenant;
   el.tenantPhone.value = r.parties.phone;
   el.tenantEmail.value = r.parties.email;
+  el.tenant2Name.value = r.parties.tenant2 || "";
+  el.tenant2Email.value = r.parties.tenant2Email || "";
 
   el.electricityHp.value = r.meters.electricityHp;
   el.electricityHc.value = r.meters.electricityHc;
@@ -1159,20 +1513,30 @@ function hydrateEditor() {
   el.generalReservations.value = r.reservations;
   el.noGeneralObservation.checked = r.noObservation;
 
-  el.tenantSignerName.value = r.signatures.tenantName;
-  el.landlordSignerName.value = r.signatures.landlordName;
+  el.tenantSignerName.value = r.signatures.tenantName || r.parties.tenant || "";
+  el.tenant2SignerName.value = r.signatures.tenant2Name || r.parties.tenant2 || "";
+  el.landlordSignerName.value = r.signatures.landlordName || r.parties.landlord || "";
 
   tenantSignature.fromDataURL(r.signatures.tenantData);
+  tenant2Signature.fromDataURL(r.signatures.tenant2Data);
   landlordSignature.fromDataURL(r.signatures.landlordData);
+  el.tenant2SignatureCard.classList.toggle("is-hidden", !r.parties.tenant2);
 
+  updateFurnishedLegalNote();
+  el.lockedBanner.classList.toggle("is-hidden", !r.finalizedAt);
+  el.editorView.classList.toggle("is-locked", Boolean(r.finalizedAt));
+  el.versionButton.classList.toggle("is-hidden", !r.finalizedAt);
+  el.finalizeButton.classList.toggle("is-hidden", Boolean(r.finalizedAt));
+  el.saveButton.classList.toggle("is-hidden", Boolean(r.finalizedAt));
   updateReferencePdfCard();
   renderRooms();
-  updateProgress();
+  updateProgress({ collect: false });
   updateHeader();
 }
 
 function collectEditorValues() {
   const r = state.currentRecord;
+  if (r.finalizedAt) return;
 
   r.type = el.recordType.value;
   r.date = el.recordDate.value;
@@ -1185,6 +1549,8 @@ function collectEditorValues() {
   r.parties.tenant = el.tenantName.value.trim();
   r.parties.phone = el.tenantPhone.value.trim();
   r.parties.email = el.tenantEmail.value.trim();
+  r.parties.tenant2 = el.tenant2Name.value.trim();
+  r.parties.tenant2Email = el.tenant2Email.value.trim();
 
   r.meters.electricityHp = el.electricityHp.value.trim();
   r.meters.electricityHc = el.electricityHc.value.trim();
@@ -1202,8 +1568,10 @@ function collectEditorValues() {
   r.noObservation = el.noGeneralObservation.checked;
 
   r.signatures.tenantName = el.tenantSignerName.value.trim();
-  r.signatures.landlordName = el.landlordSignerName.value.trim();
   r.signatures.tenantData = tenantSignature.toDataURL();
+  r.signatures.tenant2Name = el.tenant2SignerName.value.trim();
+  r.signatures.tenant2Data = tenant2Signature.toDataURL();
+  r.signatures.landlordName = el.landlordSignerName.value.trim();
   r.signatures.landlordData = landlordSignature.toDataURL();
 
   r.updatedAt = new Date().toISOString();
@@ -1222,10 +1590,14 @@ function calculateProgress(r) {
     ? r.rooms.filter((room) => room.validated).length / r.rooms.length
     : 0;
   const observations = r.noObservation || Boolean(r.observations || r.reservations);
-  const signatures = Boolean(
+  const primarySignatures = Boolean(
     r.signatures.tenantName && r.signatures.tenantData &&
     r.signatures.landlordName && r.signatures.landlordData
   );
+  const secondTenantSignature = !r.parties.tenant2 || Boolean(
+    r.signatures.tenant2Name && r.signatures.tenant2Data
+  );
+  const signatures = primarySignatures && secondTenantSignature;
 
   return Math.round(
     (information ? 15 : 0) +
@@ -1238,18 +1610,20 @@ function calculateProgress(r) {
 }
 
 function calculateStatus(r) {
+  if (r.finalizedAt) return "Terminé";
   const progress = calculateProgress(r);
-  if (progress === 100) return "Terminé";
+  if (progress === 100) return "Prêt à finaliser";
   if (
     r.signatures.tenantName || r.signatures.tenantData ||
+    r.signatures.tenant2Name || r.signatures.tenant2Data ||
     r.signatures.landlordName || r.signatures.landlordData
   ) return "À signer";
   return "Brouillon";
 }
 
-function updateProgress() {
+function updateProgress({ collect = true } = {}) {
   if (!state.currentRecord) return;
-  collectEditorValues();
+  if (collect && !isCurrentRecordLocked()) collectEditorValues();
   const progress = calculateProgress(state.currentRecord);
   el.progressPercent.textContent = `${progress} %`;
   el.progressBar.style.width = `${progress}%`;
@@ -1257,15 +1631,22 @@ function updateProgress() {
 }
 
 async function saveCurrentRecord({ silent = false } = {}) {
-  if (!state.currentRecord) return;
+  if (!state.currentRecord || isCurrentRecordLocked()) return;
   collectEditorValues();
   if (!silent) el.saveStatus.textContent = "Enregistrement…";
-  await saveRecord(state.currentRecord);
-  el.saveStatus.textContent = "Enregistré";
-  updateProgress();
+  try {
+    await saveRecord(state.currentRecord);
+    el.saveStatus.textContent = "Enregistré";
+    updateProgress({ collect: false });
+  } catch (error) {
+    console.error("Échec de l’enregistrement", error);
+    el.saveStatus.textContent = "Erreur d’enregistrement";
+    if (!silent) alert("Le dossier n’a pas pu être enregistré sur cet appareil.");
+  }
 }
 
 function scheduleAutosave() {
+  if (!state.currentRecord || isCurrentRecordLocked()) return;
   clearTimeout(state.autosaveTimer);
   el.saveStatus.textContent = "Modifications non enregistrées";
   state.autosaveTimer = setTimeout(() => saveCurrentRecord({ silent: true }), 800);
@@ -1355,6 +1736,25 @@ function renderRooms() {
         `).join("")}
       </div>
 
+      ${r.property.furnished === "Oui" ? `
+      <section class="inventory-card">
+        <div class="inventory-card__head"><h4>Inventaire du mobilier</h4><span>${(room.inventory || []).length} élément(s)</span></div>
+        <div class="inventory-list">${(room.inventory || []).map(item => `
+          <div class="inventory-item ${isExit ? "inventory-item--exit" : ""}">
+            <label>Désignation${(item.requirementIds || []).length ? `<span class="inventory-required">mobilier minimal</span>` : ""}<input data-room-id="${room.id}" data-inventory-id="${item.id}" data-inventory-field="name" value="${escapeHtml(item.name)}"></label>
+            <label>Qté<input type="number" min="0" data-room-id="${room.id}" data-inventory-id="${item.id}" data-inventory-field="quantity" value="${Number(item.quantity ?? 1)}"></label>
+            ${isExit ? `<label>État d’entrée<select data-room-id="${room.id}" data-inventory-id="${item.id}" data-inventory-field="entryCondition">${conditionOptions(item.entryCondition)}</select></label><label>État de sortie<select data-room-id="${room.id}" data-inventory-id="${item.id}" data-inventory-field="exitCondition">${conditionOptions(item.exitCondition)}</select></label>` : `<label>État<select data-room-id="${room.id}" data-inventory-id="${item.id}" data-inventory-field="entryCondition">${conditionOptions(item.entryCondition)}</select></label>`}
+            <label>Observations<input data-room-id="${room.id}" data-inventory-id="${item.id}" data-inventory-field="notes" value="${escapeHtml(item.notes || "")}" placeholder="Marque, modèle, défaut, précision…"></label>
+            <button class="button button--danger" type="button" data-inventory-delete="${room.id}:${item.id}" aria-label="Supprimer ce mobilier">×</button>
+            <div class="inventory-item__photos">
+              ${isExit && (item.entryPhotos || []).length ? `<div class="catalog-card__meta">Photos d’entrée conservées : ${(item.entryPhotos || []).length}</div>` : ""}
+              <label class="button button--secondary photo-control">Ajouter des photos du mobilier<input type="file" accept="image/*" capture="environment" multiple data-inventory-photo-input="${room.id}:${item.id}"></label>
+              <div class="inventory-photo-grid">${(item.photos || []).map((photo, photoIndex) => `<div class="inventory-photo"><img src="${photo.data}" alt="${escapeHtml(item.name)}"><button type="button" data-inventory-photo-delete="${room.id}:${item.id}:${photoIndex}" aria-label="Supprimer la photo">×</button></div>`).join("")}</div>
+            </div>
+          </div>`).join("")}</div>
+        <div class="inventory-actions"><button class="button button--secondary" type="button" data-inventory-add="${room.id}">+ Ajouter du mobilier</button><button class="button button--secondary" type="button" data-inventory-template="${room.id}">Préremplir cette pièce</button></div>
+      </section>` : ""}
+
       <div class="room-card__footer">
         <button class="button button--secondary" type="button" data-element-add="${room.id}">+ Ajouter un élément</button>
         <label class="button button--secondary photo-control">
@@ -1378,13 +1778,18 @@ function renderRooms() {
     </article>
   `).join("");
 
+  updateFurnishedLegalNote();
   bindRoomEvents();
 }
 
 function bindRoomEvents() {
+  const editable = () => !isCurrentRecordLocked();
+
   $$("[data-room-field]").forEach((field) => {
     field.oninput = () => {
+      if (!editable()) return;
       const room = findRoom(field.dataset.roomId);
+      if (!room) return;
       room[field.dataset.roomField] = field.value;
       room.validated = false;
       scheduleAutosave();
@@ -1394,9 +1799,12 @@ function bindRoomEvents() {
 
   $$("[data-element-field]").forEach((field) => {
     const update = () => {
+      if (!editable()) return;
       const element = findElement(field.dataset.roomId, field.dataset.elementId);
+      const room = findRoom(field.dataset.roomId);
+      if (!element || !room) return;
       element[field.dataset.elementField] = field.value;
-      findRoom(field.dataset.roomId).validated = false;
+      room.validated = false;
       scheduleAutosave();
       updateProgress();
     };
@@ -1404,12 +1812,114 @@ function bindRoomEvents() {
     field.onchange = update;
   });
 
+  $$("[data-inventory-field]").forEach((field) => {
+    const update = () => {
+      if (!editable()) return;
+      const room = findRoom(field.dataset.roomId);
+      const item = findInventoryItem(field.dataset.roomId, field.dataset.inventoryId);
+      if (!room || !item) return;
+      item[field.dataset.inventoryField] = field.dataset.inventoryField === "quantity"
+        ? Math.max(0, Number(field.value || 0))
+        : field.value;
+      room.validated = false;
+      updateFurnishedLegalNote();
+      scheduleAutosave();
+      updateProgress();
+    };
+    field.oninput = update;
+    field.onchange = update;
+  });
+
+  $$("[data-inventory-add]").forEach((button) => {
+    button.onclick = () => {
+      if (!editable()) return;
+      const room = findRoom(button.dataset.inventoryAdd);
+      if (!room) return;
+      room.inventory = room.inventory || [];
+      room.inventory.push(createInventoryItem());
+      room.validated = false;
+      renderRooms();
+      scheduleAutosave();
+    };
+  });
+
+  $$("[data-inventory-template]").forEach((button) => {
+    button.onclick = () => {
+      if (!editable()) return;
+      const room = findRoom(button.dataset.inventoryTemplate);
+      if (!room) return;
+      room.inventory = room.inventory || [];
+      const existing = new Set(room.inventory.map((item) => normalizeSearchText(item.name)));
+      furnitureForRoom(room.name, state.currentRecord.property.nature).forEach((item) => {
+        if (!existing.has(normalizeSearchText(item.name))) room.inventory.push(item);
+      });
+      room.validated = false;
+      renderRooms();
+      scheduleAutosave();
+    };
+  });
+
+  $$("[data-inventory-delete]").forEach((button) => {
+    button.onclick = () => {
+      if (!editable()) return;
+      const [roomId, itemId] = button.dataset.inventoryDelete.split(":");
+      const room = findRoom(roomId);
+      if (!room) return;
+      room.inventory = (room.inventory || []).filter((item) => item.id !== itemId);
+      room.validated = false;
+      renderRooms();
+      scheduleAutosave();
+    };
+  });
+
+  $$("[data-inventory-photo-input]").forEach((input) => {
+    input.onchange = async () => {
+      if (!editable()) return;
+      const [roomId, itemId] = input.dataset.inventoryPhotoInput.split(":");
+      const item = findInventoryItem(roomId, itemId);
+      const room = findRoom(roomId);
+      if (!item || !room) return;
+      try {
+        for (const file of input.files) {
+          item.photos.push({ id: uid(), data: await compressImage(file, { maxWidth: 1200, quality: 0.74 }) });
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Une photo du mobilier n’a pas pu être ajoutée.");
+      }
+      input.value = "";
+      room.validated = false;
+      renderRooms();
+      scheduleAutosave();
+    };
+  });
+
+  $$("[data-inventory-photo-delete]").forEach((button) => {
+    button.onclick = () => {
+      if (!editable()) return;
+      const [roomId, itemId, photoIndex] = button.dataset.inventoryPhotoDelete.split(":");
+      const item = findInventoryItem(roomId, itemId);
+      const room = findRoom(roomId);
+      if (!item || !room) return;
+      item.photos.splice(Number(photoIndex), 1);
+      room.validated = false;
+      renderRooms();
+      scheduleAutosave();
+    };
+  });
+
   $$("[data-room-conform]").forEach((button) => {
     button.onclick = () => {
+      if (!editable()) return;
       const room = findRoom(button.dataset.roomConform);
+      if (!room) return;
       room.elements.forEach((element) => {
-        element.entryCondition = "Bon état";
         if (state.currentRecord.type === "Sortie") element.exitCondition = "Bon état";
+        else element.entryCondition = "Bon état";
+      });
+      (room.inventory || []).forEach((item) => {
+        if (state.currentRecord.type === "Sortie") item.exitCondition = "Bon état";
+        else item.entryCondition = "Bon état";
       });
       room.validated = true;
       renderRooms();
@@ -1420,13 +1930,17 @@ function bindRoomEvents() {
 
   $$("[data-room-duplicate]").forEach((button) => {
     button.onclick = () => {
+      if (!editable()) return;
       const index = state.currentRecord.rooms.findIndex((room) => room.id === button.dataset.roomDuplicate);
+      if (index < 0) return;
       const source = state.currentRecord.rooms[index];
       const copy = structuredClone(source);
       copy.id = uid();
       copy.name = uniqueRoomName(source.name);
       copy.validated = false;
       copy.photos = [];
+      copy.entryPhotos = [];
+      copy.inventory = (copy.inventory || []).map((item) => ({ ...item, id: uid(), photos: [], entryPhotos: [] }));
       copy.elements = copy.elements.map((element) => ({ ...element, id: uid() }));
       state.currentRecord.rooms.splice(index + 1, 0, copy);
       renderRooms();
@@ -1437,6 +1951,7 @@ function bindRoomEvents() {
 
   $$("[data-room-delete]").forEach((button) => {
     button.onclick = () => {
+      if (!editable()) return;
       if (!confirm("Supprimer cette pièce ?")) return;
       state.currentRecord.rooms = state.currentRecord.rooms.filter((room) => room.id !== button.dataset.roomDelete);
       renderRooms();
@@ -1447,7 +1962,9 @@ function bindRoomEvents() {
 
   $$("[data-element-add]").forEach((button) => {
     button.onclick = () => {
+      if (!editable()) return;
       const room = findRoom(button.dataset.elementAdd);
+      if (!room) return;
       room.elements.push(createElement("Nouvel élément"));
       room.validated = false;
       renderRooms();
@@ -1458,8 +1975,10 @@ function bindRoomEvents() {
 
   $$("[data-element-delete]").forEach((button) => {
     button.onclick = () => {
+      if (!editable()) return;
       const [roomId, elementId] = button.dataset.elementDelete.split(":");
       const room = findRoom(roomId);
+      if (!room) return;
       room.elements = room.elements.filter((element) => element.id !== elementId);
       room.validated = false;
       renderRooms();
@@ -1470,11 +1989,19 @@ function bindRoomEvents() {
 
   $$("[data-photo-input]").forEach((input) => {
     input.onchange = async () => {
+      if (!editable()) return;
       const room = findRoom(input.dataset.photoInput);
-      for (const file of input.files) {
-        room.photos.push({ id: uid(), data: await compressImage(file) });
+      if (!room) return;
+      try {
+        for (const file of input.files) {
+          room.photos.push({ id: uid(), data: await compressImage(file) });
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Une photo n’a pas pu être ajoutée.");
       }
       input.value = "";
+      room.validated = false;
       renderRooms();
       scheduleAutosave();
     };
@@ -1482,8 +2009,12 @@ function bindRoomEvents() {
 
   $$("[data-photo-delete]").forEach((button) => {
     button.onclick = () => {
+      if (!editable()) return;
       const [roomId, photoIndex] = button.dataset.photoDelete.split(":");
-      findRoom(roomId).photos.splice(Number(photoIndex), 1);
+      const room = findRoom(roomId);
+      if (!room) return;
+      room.photos.splice(Number(photoIndex), 1);
+      room.validated = false;
       renderRooms();
       scheduleAutosave();
     };
@@ -1491,7 +2022,9 @@ function bindRoomEvents() {
 
   $$("[data-room-validate]").forEach((button) => {
     button.onclick = () => {
+      if (!editable()) return;
       const room = findRoom(button.dataset.roomValidate);
+      if (!room) return;
 
       if (room.validated) {
         room.validated = false;
@@ -1502,14 +2035,19 @@ function bindRoomEvents() {
       }
 
       const unverified = room.elements.filter((element) => {
-        const condition = state.currentRecord.type === "Sortie"
-          ? element.exitCondition
-          : element.entryCondition;
+        const condition = state.currentRecord.type === "Sortie" ? element.exitCondition : element.entryCondition;
         return condition === "Non vérifié";
       }).length;
 
-      if (unverified) {
-        alert(`${unverified} élément(s) sont encore indiqués comme « Non vérifié ».`);
+      const inventoryUnverified = state.currentRecord.property.furnished === "Oui"
+        ? (room.inventory || []).filter((item) => {
+            const condition = state.currentRecord.type === "Sortie" ? item.exitCondition : item.entryCondition;
+            return condition === "Non vérifié";
+          }).length
+        : 0;
+
+      if (unverified + inventoryUnverified) {
+        alert(`${unverified + inventoryUnverified} élément(s) sont encore indiqués comme « Non vérifié ».`);
         return;
       }
 
@@ -1521,24 +2059,119 @@ function bindRoomEvents() {
   });
 }
 
-async function compressImage(file) {
+async function compressImage(file, { maxWidth = 1400, quality = 0.76 } = {}) {
+  if (!(file instanceof File) || !file.type.startsWith("image/")) {
+    throw new Error("Le fichier sélectionné n’est pas une image.");
+  }
+  if (file.size > 30 * 1024 * 1024) {
+    throw new Error("La photo dépasse 30 Mo.");
+  }
+
   const objectUrl = URL.createObjectURL(file);
   const image = new Image();
+  try {
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = () => reject(new Error("Image illisible."));
+      image.src = objectUrl;
+    });
 
-  await new Promise((resolve, reject) => {
-    image.onload = resolve;
-    image.onerror = reject;
-    image.src = objectUrl;
-  });
+    const scale = Math.min(1, maxWidth / Math.max(image.width, 1));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(Math.round(image.width * scale), 1);
+    canvas.height = Math.max(Math.round(image.height * scale), 1);
+    const context = canvas.getContext("2d", { alpha: false });
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", quality);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
 
-  const scale = Math.min(1, 1400 / image.width);
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(Math.round(image.width * scale), 1);
-  canvas.height = Math.max(Math.round(image.height * scale), 1);
-  canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
-  URL.revokeObjectURL(objectUrl);
+function arrayBufferToBase64(buffer) {
+  if (!(buffer instanceof ArrayBuffer)) return "";
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunk));
+  }
+  return btoa(binary);
+}
 
-  return canvas.toDataURL("image/jpeg", 0.76);
+function base64ToArrayBuffer(value) {
+  const binary = atob(value || "");
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return bytes.buffer;
+}
+
+function prepareRecordForBackup(record) {
+  const copy = structuredClone(record);
+  if (copy.referencePdf?.data instanceof ArrayBuffer) {
+    copy.referencePdf.dataBase64 = arrayBufferToBase64(copy.referencePdf.data);
+    delete copy.referencePdf.data;
+  }
+  return copy;
+}
+
+function restoreRecordFromBackup(record) {
+  const copy = structuredClone(record);
+  if (copy.referencePdf?.dataBase64) {
+    copy.referencePdf.data = base64ToArrayBuffer(copy.referencePdf.dataBase64);
+    delete copy.referencePdf.dataBase64;
+  }
+  return ensureRecordV7(copy);
+}
+
+async function exportBackup() {
+  const records = await readAllRecords();
+  const payload = {
+    kind: "etat-des-lieux-backup",
+    schemaVersion: 7,
+    exportedAt: new Date().toISOString(),
+    records: records.map(prepareRecordForBackup)
+  };
+  const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const date = new Date().toISOString().slice(0, 10);
+  link.href = url;
+  link.download = `sauvegarde-etats-des-lieux-${date}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function importBackup(file) {
+  if (!file) return;
+  let payload;
+  try {
+    payload = JSON.parse(await file.text());
+  } catch {
+    alert("Ce fichier n’est pas une sauvegarde JSON valide.");
+    return;
+  }
+
+  const records = Array.isArray(payload) ? payload : payload?.records;
+  if (!Array.isArray(records) || !records.length) {
+    alert("Aucun dossier exploitable n’a été trouvé dans cette sauvegarde.");
+    return;
+  }
+
+  if (!confirm(`Importer ${records.length} dossier(s) ? Les dossiers ayant le même identifiant seront remplacés.`)) return;
+
+  try {
+    await saveRecords(records.map(restoreRecordFromBackup));
+    alert(`${records.length} dossier(s) importé(s).`);
+    await renderCatalog();
+  } catch (error) {
+    console.error(error);
+    alert("L’import de la sauvegarde a échoué.");
+  }
 }
 
 function openWizard() {
@@ -1609,7 +2242,9 @@ async function finishWizard() {
 
   record.rooms = [...new Set(selected)].map((roomName) => {
     const template = roomName.replace(/ \d+$/, "");
-    return createRoom(ROOM_TEMPLATES[template] ? template : "Chambre", roomName);
+    const room = createRoom(ROOM_TEMPLATES[template] ? template : "Chambre", roomName);
+    if (record.property.furnished === "Oui") room.inventory = furnitureForRoom(roomName, record.property.nature);
+    return room;
   });
 
   const file = el.wizardReferencePdf.files[0];
@@ -1640,7 +2275,9 @@ function renderRoomCatalog() {
   $$("[data-room-template]").forEach((button) => {
     button.onclick = () => {
       const template = button.dataset.roomTemplate;
-      state.currentRecord.rooms.push(createRoom(template, uniqueRoomName(template)));
+      const room = createRoom(template, uniqueRoomName(template));
+      if (state.currentRecord.property.furnished === "Oui") room.inventory = furnitureForRoom(room.name, state.currentRecord.property.nature);
+      state.currentRecord.rooms.push(room);
       closeModal(el.roomCatalogModal);
       renderRooms();
       scheduleAutosave();
@@ -1658,6 +2295,10 @@ function updateReferencePdfCard() {
 function previewReferencePdf() {
   const pdf = state.currentRecord.referencePdf;
   if (!pdf) return;
+  if (!(pdf.data instanceof ArrayBuffer)) {
+    alert("Le PDF de référence n’est plus disponible dans ce dossier.");
+    return;
+  }
 
   if (state.referencePdfUrl) URL.revokeObjectURL(state.referencePdfUrl);
   state.referencePdfUrl = URL.createObjectURL(new Blob([pdf.data], { type: "application/pdf" }));
@@ -1706,10 +2347,61 @@ function bindGlobalEvents() {
   el.backButton.onclick = showCatalog;
   el.newRecordButton.onclick = openWizard;
   el.catalogSearch.oninput = renderCatalog;
+  el.exportBackupButton.onclick = exportBackup;
+  el.importBackupInput.onchange = async () => {
+    const file = el.importBackupInput.files?.[0];
+    await importBackup(file);
+    el.importBackupInput.value = "";
+  };
+
   el.saveButton.onclick = () => saveCurrentRecord();
   el.generatePdfButton.onclick = requestPdf;
 
+  el.finalizeButton.onclick = async () => {
+    if (!state.currentRecord || isCurrentRecordLocked()) return;
+    await saveCurrentRecord({ silent: true });
+    const issues = getPreflightIssues(state.currentRecord);
+    if (issues.length) {
+      showPreflight(issues);
+      return;
+    }
+    if (!confirm("Finaliser ce document ? Cette version sera verrouillée et toute correction devra créer une nouvelle version.")) return;
+    state.currentRecord.finalizedAt = new Date().toISOString();
+    state.currentRecord.updatedAt = state.currentRecord.finalizedAt;
+    state.currentRecord.status = "Terminé";
+    await saveRecord(state.currentRecord);
+    hydrateEditor();
+  };
+
+  el.versionButton.onclick = async () => {
+    if (!state.currentRecord?.finalizedAt) return;
+    const source = state.currentRecord;
+    const copy = structuredClone(source);
+    const now = new Date().toISOString();
+    copy.id = uid();
+    copy.parentRecordId = source.id;
+    copy.version = Number(source.version || 1) + 1;
+    copy.finalizedAt = null;
+    copy.status = "Brouillon";
+    copy.createdAt = now;
+    copy.updatedAt = now;
+    copy.signatures = {
+      tenantName: source.parties?.tenant || "",
+      tenantData: "",
+      tenant2Name: source.parties?.tenant2 || "",
+      tenant2Data: "",
+      landlordName: source.parties?.landlord || "",
+      landlordData: ""
+    };
+    ensureRecordV7(copy);
+    await saveRecord(copy);
+    state.currentRecord = copy;
+    hydrateEditor();
+    showEditor();
+  };
+
   el.addRoomButton.onclick = () => {
+    if (isCurrentRecordLocked()) return;
     renderRoomCatalog();
     openModal(el.roomCatalogModal);
   };
@@ -1753,19 +2445,36 @@ function bindGlobalEvents() {
     };
   });
 
-  el.editorView.oninput = () => {
+  el.editorView.oninput = (event) => {
+    if (isCurrentRecordLocked()) return;
+    if (event.target === el.tenant2Name) {
+      el.tenant2SignatureCard.classList.toggle("is-hidden", !el.tenant2Name.value.trim());
+      if (!el.tenant2SignerName.value.trim()) el.tenant2SignerName.value = el.tenant2Name.value.trim();
+    }
     scheduleAutosave();
     updateProgress();
   };
 
-  el.editorView.onchange = () => {
+  el.editorView.onchange = (event) => {
+    if (isCurrentRecordLocked()) return;
+    if (event.target === el.propertyFurnished) {
+      state.currentRecord.property.furnished = el.propertyFurnished.value;
+      if (el.propertyFurnished.value === "Oui") {
+        state.currentRecord.rooms.forEach((room) => {
+          if (!(room.inventory || []).length) room.inventory = furnitureForRoom(room.name, state.currentRecord.property.nature);
+        });
+      }
+      renderRooms();
+    }
     scheduleAutosave();
     updateProgress();
   };
 
   $$(".clear-signature-button").forEach((button) => {
     button.onclick = () => {
+      if (isCurrentRecordLocked()) return;
       if (button.dataset.signature === "tenant") tenantSignature.clear();
+      else if (button.dataset.signature === "tenant2") tenant2Signature.clear();
       else landlordSignature.clear();
       scheduleAutosave();
       updateProgress();
@@ -1775,9 +2484,23 @@ function bindGlobalEvents() {
 
 async function initialize() {
   cacheElements();
+  const missingElements = ids.filter((id) => !el[id]);
+  if (missingElements.length) {
+    console.error("Éléments d’interface manquants :", missingElements);
+    alert("L’application n’a pas pu s’initialiser correctement.");
+    return;
+  }
 
   tenantSignature = new SignatureCanvas(
     document.getElementById("tenantSignatureCanvas"),
+    () => {
+      scheduleAutosave();
+      updateProgress();
+    }
+  );
+
+  tenant2Signature = new SignatureCanvas(
+    document.getElementById("tenant2SignatureCanvas"),
     () => {
       scheduleAutosave();
       updateProgress();
@@ -1793,18 +2516,27 @@ async function initialize() {
   );
 
   bindGlobalEvents();
-  await renderCatalog();
+
+  const storageAvailable = await verifyStorageAvailable();
+  el.storageWarning.classList.toggle("is-hidden", storageAvailable);
+
+  try {
+    await renderCatalog();
+  } catch (error) {
+    console.error(error);
+    el.storageWarning.classList.remove("is-hidden");
+  }
   showCatalog();
 
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./service-worker.js").catch((error) => {
-      console.warn("Service worker non enregistré :", error);
-    });
+  if (!window.SINGLE_FILE_BUILD && "serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./service-worker.js")
+      .then((registration) => registration.update().catch(() => {}))
+      .catch((error) => console.warn("Service worker non enregistré :", error));
   }
 }
 
 document.addEventListener("DOMContentLoaded", initialize);
 
-</script>
+  </script>
 </body>
 </html>
